@@ -1,0 +1,31 @@
+target C {
+    platform: "RP2040",
+    threading: false,
+}
+
+import Accelerometer from "IMU.lf"
+
+reactor Tilt {
+
+    a = new Accelerometer()
+    output roll:float;
+    output pitch:float;
+    output yaw:float;
+
+    input x_in:float;
+    input y_in:float;
+    input z_in:float;
+    
+
+    reaction(x_in, y_in, z_in) -> roll, pitch, yaw{=
+        
+        float x = x_in->value;
+        float y = y_in->value;
+        float z = z_in->value;
+
+        lf_set(pitch, (180/3.1415926535897932)*atan(x / sqrt((y*y + z*z))));
+        lf_set(roll, (180/3.1415926535897932)*atan(y / sqrt((x*x + z*z))));
+        lf_set(yaw, (180/3.1415926535897932)*atan(sqrt((y*y + x*x)) / z));
+    =}
+
+}
