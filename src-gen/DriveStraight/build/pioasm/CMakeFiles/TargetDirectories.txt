@@ -1,0 +1,3 @@
+/home/dobbs/ucb_related/fall2023/eecs149/port/src-gen/DriveStraight/build/pioasm/CMakeFiles/pioasm.dir
+/home/dobbs/ucb_related/fall2023/eecs149/port/src-gen/DriveStraight/build/pioasm/CMakeFiles/edit_cache.dir
+/home/dobbs/ucb_related/fall2023/eecs149/port/src-gen/DriveStraight/build/pioasm/CMakeFiles/rebuild_cache.dir

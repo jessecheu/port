@@ -1,0 +1,8 @@
+{
+"cmake.configureArgs": [
+"-DLF_REACTION_GRAPH_BREADTH=3",
+"-DLF_UNTHREADED=1",
+"-DMODAL_REACTORS=TRUE",
+"-DLOG_LEVEL=2"
+]
+}

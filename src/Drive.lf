@@ -1,0 +1,98 @@
+/**
+ * Drives the Pololu 3pi+ 2040 Robot using lines on the ground as guidance. 
+ * <a href="https://www.pololu.com/docs/0J86">Pololu 3pi+ 2040 robot</a>.
+ * This program spends the first 10 seconds in calibration mode, during which
+ * you should move the robot over the light and dark areas that you would like
+ * it to detect.  It then switches into measurement mode and displays the
+ * measured reflectance of the five IR sensors.
+ *
+ */
+ target C {
+  platform: {
+    name: "rp2040",
+    board: "pololu_3pi_2040_robot"
+  },
+  threading: false,
+}
+
+import Line from "lib/Line.lf"
+import Display from "lib/Display.lf"
+import Motors from "lib/Motors.lf"
+
+main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
+  line = new Line()
+  disp = new Display()
+  motor = new Motors()
+
+  timer t(0, sample_period)
+  timer seconds(0, 1 s)
+  timer end_calibration(calibration_time)
+  state count: int = 0
+
+  timer backup(0, 500 ms)
+
+
+  reaction(seconds) -> disp.line3 {=
+  static char buf[17];
+  snprintf(buf, 17, "time:%8d s", self->count++);
+  lf_set(disp.line3, buf);
+  =}
+
+  reaction(end_calibration) -> line.calibrate, motor.left_power, motor.right_power {=
+  lf_set(line.calibrate, false);
+  lf_set(motor.left_power, 0.2f);
+  lf_set(motor.right_power, 0.2f);
+  =}
+
+  reaction(t) -> line.trigger {=
+  lf_set(line.trigger, true);
+  =}
+
+  initial mode DRIVE {
+      reaction(line.reflect) -> motor.left_power, motor.right_power{= 
+          
+      =}
+      
+
+  }
+
+  mode OBSTACLE_DETECTED {
+      reaction(backup) -> DRIVE, motor.left_power, motor.right_power {=
+          lf_set(motor.left_power, 0.2f);
+          lf_set(motor.right_power, 0.2f);
+          lf_set_mode(DRIVE);
+      =}
+  }
+
+
+  reaction(startup) -> disp.line0, disp.line1, disp.line2 {=
+    lf_set(disp.line0, "CALIBRATING");
+    lf_set(disp.line1, "Roll robot over");
+    lf_set(disp.line2, "light and dark.");
+    
+  =}
+
+  reaction(line.reflect) -> disp.line0, disp.line1, disp.line2 {=
+    static char buf0[17];
+    static char buf1[17];
+    static char buf2[17];
+    if (line.reflect->value[0] >= 1000 || line.reflect->value[1] >= 1000) {
+      snprintf(buf0, 17, "Left");
+    } else {
+      snprintf(buf0, 17, " ");
+    }
+    if (line.reflect->value[1] >= 1000 || line.reflect->value[2] >= 1000 || line.reflect->value[3] >= 1000) {
+      snprintf(buf1, 17, "Center");
+    } else { 
+      snprintf(buf1, 17, " ");
+    }
+    if (line.reflect->value[3] >= 1000 || line.reflect->value[4] >= 1000) {
+      snprintf(buf2, 17, "Right");
+    } else { 
+      snprintf(buf2, 17, " ");
+    }
+    lf_set(disp.line0, buf0);
+    lf_set(disp.line1, buf1);
+    lf_set(disp.line2, buf2);
+  =}
+}
