@@ -3,11 +3,11 @@
 #include "include/core/reactor.h"
 #include "_display.h"
 #include "_line.h"
-#ifndef TOP_LEVEL_PREAMBLE_1269726699_H
-#define TOP_LEVEL_PREAMBLE_1269726699_H
+#ifndef TOP_LEVEL_PREAMBLE_1609754699_H
+#define TOP_LEVEL_PREAMBLE_1609754699_H
+#include <ir_sensors.h>
 #include <pico/stdlib.h>
 #include <display.h>        // Do not use "display.h". Doesn't work.
-#include <ir_sensors.h>
 #endif
 typedef struct {
     struct self_base_t base;

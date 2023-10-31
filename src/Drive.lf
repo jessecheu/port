@@ -50,7 +50,7 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
 
   initial mode DRIVE {
       reaction(line.reflect) -> motor.left_power, motor.right_power{= 
-          
+          //Drives using the line on the ground as reference
       =}
       
 

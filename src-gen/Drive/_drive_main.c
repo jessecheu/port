@@ -66,7 +66,7 @@ void _drive_mainreaction_function_3(void* instance_args) {
     motor.left_power = &(self->_lf_motor.left_power);
     motor.right_power = &(self->_lf_motor.right_power);
     #line 53 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
-    
+    //Drives using the line on the ground as reference
 }
 #include "include/api/set_undef.h"
 #include "include/api/set.h"
