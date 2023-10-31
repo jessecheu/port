@@ -51,7 +51,29 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
   initial mode DRIVE {
       reaction(line.reflect) -> motor.left_power, motor.right_power{= 
           //Drives using the line on the ground as reference
-      =}
+
+          /* Motor feedback to stay on the correct path */
+          //If the left side of the line sensors are detected, we shift the robot right
+          if (line.reflect->value[0] >= 1000 || line.reflect->value[1] >= 1000) {
+            //Rotating wheels right
+            lf_set(motor.left_power, 0.15);
+            lf_set(motor.right_power, 0.1);
+          } 
+
+          //Motors are correctly in the center
+          if (line.reflect->value[2] >= 1000) {
+            //Keep the wheels straight
+            lf_set(motor.left_power, 0.1);
+            lf_set(motor.right_power, 0.1);
+          } 
+
+          //If the right side of the line sensors are detected, we shift the robot left
+          if (line.reflect->value[3] >= 1000 || line.reflect->value[4] >= 1000) {
+            //Rotate the wheel left
+            lf_set(motor.left_power, 0.1);
+            lf_set(motor.right_power, 0.15);
+          } 
+      =} 
       
 
   }
@@ -81,7 +103,7 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
     } else {
       snprintf(buf0, 17, " ");
     }
-    if (line.reflect->value[1] >= 1000 || line.reflect->value[2] >= 1000 || line.reflect->value[3] >= 1000) {
+    if (line.reflect->value[2] >= 1000) {
       snprintf(buf1, 17, "Center");
     } else { 
       snprintf(buf1, 17, " ");

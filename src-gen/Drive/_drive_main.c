@@ -67,6 +67,28 @@ void _drive_mainreaction_function_3(void* instance_args) {
     motor.right_power = &(self->_lf_motor.right_power);
     #line 53 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     //Drives using the line on the ground as reference
+    
+              /* Motor feedback to stay on the correct path */
+              //If the left side of the line sensors are detected, we shift the robot right
+              if (line.reflect->value[0] >= 1000 || line.reflect->value[1] >= 1000) {
+                //Rotating wheels right
+                lf_set(motor.left_power, 0.15);
+                lf_set(motor.right_power, 0.1);
+              } 
+    
+              //Motors are correctly in the center
+              if (line.reflect->value[2] >= 1000) {
+                //Keep the wheels straight
+                lf_set(motor.left_power, 0.1);
+                lf_set(motor.right_power, 0.1);
+              } 
+    
+              //If the right side of the line sensors are detected, we shift the robot left
+              if (line.reflect->value[3] >= 1000 || line.reflect->value[4] >= 1000) {
+                //Rotate the wheel left
+                lf_set(motor.left_power, 0.1);
+                lf_set(motor.right_power, 0.15);
+              }
 }
 #include "include/api/set_undef.h"
 #include "include/api/set.h"
@@ -81,7 +103,7 @@ void _drive_mainreaction_function_4(void* instance_args) {
     lf_mode_change_type_t _lf_DRIVE_change_type = reset_transition;
     motor.left_power = &(self->_lf_motor.left_power);
     motor.right_power = &(self->_lf_motor.right_power);
-    #line 61 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 83 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     lf_set(motor.left_power, 0.2f);
     lf_set(motor.right_power, 0.2f);
     lf_set_mode(DRIVE);
@@ -99,7 +121,7 @@ void _drive_mainreaction_function_5(void* instance_args) {
     disp.line0 = &(self->_lf_disp.line0);
     disp.line1 = &(self->_lf_disp.line1);
     disp.line2 = &(self->_lf_disp.line2);
-    #line 69 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 91 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     lf_set(disp.line0, "CALIBRATING");
     lf_set(disp.line1, "Roll robot over");
     lf_set(disp.line2, "light and dark.");
@@ -122,7 +144,7 @@ void _drive_mainreaction_function_6(void* instance_args) {
     disp.line0 = &(self->_lf_disp.line0);
     disp.line1 = &(self->_lf_disp.line1);
     disp.line2 = &(self->_lf_disp.line2);
-    #line 76 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 98 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     static char buf0[17];
     static char buf1[17];
     static char buf2[17];
@@ -131,7 +153,7 @@ void _drive_mainreaction_function_6(void* instance_args) {
     } else {
       snprintf(buf0, 17, " ");
     }
-    if (line.reflect->value[1] >= 1000 || line.reflect->value[2] >= 1000 || line.reflect->value[3] >= 1000) {
+    if (line.reflect->value[2] >= 1000) {
       snprintf(buf1, 17, "Center");
     } else { 
       snprintf(buf1, 17, " ");
@@ -235,47 +257,47 @@ _drive_main_main_self_t* new__drive_main() {
     self->_lf__reaction_3.name = "?";
     #line 52 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_3.mode = &self->_lf__modes[0];
-    #line 60 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 82 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_4.number = 4;
-    #line 60 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 82 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_4.function = _drive_mainreaction_function_4;
-    #line 60 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 82 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_4.self = self;
-    #line 60 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 82 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_4.deadline_violation_handler = NULL;
-    #line 60 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 82 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_4.STP_handler = NULL;
-    #line 60 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 82 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_4.name = "?";
-    #line 60 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 82 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_4.mode = &self->_lf__modes[1];
-    #line 68 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 90 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_5.number = 5;
-    #line 68 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 90 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_5.function = _drive_mainreaction_function_5;
-    #line 68 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 90 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_5.self = self;
-    #line 68 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 90 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_5.deadline_violation_handler = NULL;
-    #line 68 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 90 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_5.STP_handler = NULL;
-    #line 68 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 90 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_5.name = "?";
-    #line 68 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 90 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_5.mode = NULL;
-    #line 75 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 97 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_6.number = 6;
-    #line 75 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 97 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_6.function = _drive_mainreaction_function_6;
-    #line 75 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 97 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_6.self = self;
-    #line 75 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 97 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_6.deadline_violation_handler = NULL;
-    #line 75 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 97 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_6.STP_handler = NULL;
-    #line 75 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 97 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_6.name = "?";
-    #line 75 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 97 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_6.mode = NULL;
     #line 27 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__t.last = NULL;
@@ -395,13 +417,13 @@ _drive_main_main_self_t* new__drive_main() {
     self->_lf__modes[0].deactivation_time = 0;
     #line 51 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__modes[0].flags = 0;
-    #line 59 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 81 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__modes[1].state = &_lf_self_base->_lf__mode_state;
-    #line 59 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 81 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__modes[1].name = "OBSTACLE_DETECTED";
-    #line 59 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 81 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__modes[1].deactivation_time = 0;
-    #line 59 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 81 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__modes[1].flags = 0;
     // Initialize mode state
     _lf_self_base->_lf__mode_state.parent_mode = NULL;
