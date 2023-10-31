@@ -81,19 +81,19 @@ void _robotlinedetection_mainreaction_function_4(void* instance_args) {
     static char buf1[17];
     static char buf2[17];
     if (line.reflect->value[0] >= 1000 || line.reflect->value[1] >= 1000) {
-      snprintf(buf0, 17, "Left");
+      snprintf(buf0, 17, "Left [0]=%d, [1]=%d", line.reflect->value[0], line.reflect->value[1]);
     } else {
-      snprintf(buf0, 17, " ");
+      snprintf(buf0, 17, "[0]=%d, [1]=%d", line.reflect->value[0], line.reflect->value[1]);
     }
-    if (line.reflect->value[1] >= 1000 || line.reflect->value[2] >= 1000 || line.reflect->value[3] >= 1000) {
-      snprintf(buf1, 17, "Center");
+    if (line.reflect->value[2] >= 1000) {
+      snprintf(buf1, 17, "Center [2]=%d", line.reflect->value[2]);
     } else { 
-      snprintf(buf1, 17, " ");
+      snprintf(buf1, 17, "[2]=%d", line.reflect->value[2]);
     }
     if (line.reflect->value[3] >= 1000 || line.reflect->value[4] >= 1000) {
-      snprintf(buf2, 17, "Right");
+      snprintf(buf2, 17, "Right [3]=%d, [4]=%d", line.reflect->value[3], line.reflect->value[4]);
     } else { 
-      snprintf(buf2, 17, " ");
+      snprintf(buf2, 17, "Right [3]=%d, [4]=%d", line.reflect->value[3], line.reflect->value[4]);
     }
     lf_set(disp.line0, buf0);
     lf_set(disp.line1, buf1);
