@@ -91,7 +91,6 @@ void _lf_initialize_trigger_objects() {
     robotlinedetection_main_self[0]->_lf__reaction_1.deadline = NEVER;
     robotlinedetection_main_self[0]->_lf__reaction_2.deadline = NEVER;
     robotlinedetection_main_self[0]->_lf__reaction_3.deadline = NEVER;
-    robotlinedetection_main_self[0]->_lf__reaction_4.deadline = NEVER;
     {
         // ***** Start initializing RobotLineDetection.line of class Line
         robotlinedetection_line_self[0] = new__line();
@@ -190,7 +189,7 @@ void _lf_initialize_trigger_objects() {
             int count = 0; SUPPRESS_UNUSED_WARNING(count);
             // Reaction writes to an input of a contained reactor.
             {
-                robotlinedetection_main_self[0]->_lf__reaction_1.output_produced[count++] = &robotlinedetection_main_self[0]->_lf_disp.line3.is_present;
+                robotlinedetection_main_self[0]->_lf__reaction_1.output_produced[count++] = &robotlinedetection_main_self[0]->_lf_line.calibrate.is_present;
             }
         }
         
@@ -213,65 +212,46 @@ void _lf_initialize_trigger_objects() {
             int count = 0; SUPPRESS_UNUSED_WARNING(count);
             // Reaction writes to an input of a contained reactor.
             {
-                robotlinedetection_main_self[0]->_lf__reaction_2.output_produced[count++] = &robotlinedetection_main_self[0]->_lf_line.calibrate.is_present;
+                robotlinedetection_main_self[0]->_lf__reaction_2.output_produced[count++] = &robotlinedetection_main_self[0]->_lf_line.trigger.is_present;
             }
         }
         
         // ** End initialization for reaction 2 of RobotLineDetection
         // Total number of outputs (single ports and multiport channels)
         // produced by reaction_3 of RobotLineDetection.
-        robotlinedetection_main_self[0]->_lf__reaction_3.num_outputs = 1;
+        robotlinedetection_main_self[0]->_lf__reaction_3.num_outputs = 4;
         // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
         // struct for this reaction.
         robotlinedetection_main_self[0]->_lf__reaction_3.triggers = (trigger_t***)_lf_allocate(
-                1, sizeof(trigger_t**),
+                4, sizeof(trigger_t**),
                 &robotlinedetection_main_self[0]->base.allocations);
         robotlinedetection_main_self[0]->_lf__reaction_3.triggered_sizes = (int*)_lf_allocate(
-                1, sizeof(int),
+                4, sizeof(int),
                 &robotlinedetection_main_self[0]->base.allocations);
         robotlinedetection_main_self[0]->_lf__reaction_3.output_produced = (bool**)_lf_allocate(
-                1, sizeof(bool*),
+                4, sizeof(bool*),
                 &robotlinedetection_main_self[0]->base.allocations);
         {
             int count = 0; SUPPRESS_UNUSED_WARNING(count);
             // Reaction writes to an input of a contained reactor.
             {
-                robotlinedetection_main_self[0]->_lf__reaction_3.output_produced[count++] = &robotlinedetection_main_self[0]->_lf_line.trigger.is_present;
+                robotlinedetection_main_self[0]->_lf__reaction_3.output_produced[count++] = &robotlinedetection_main_self[0]->_lf_disp.line0.is_present;
+            }
+            // Reaction writes to an input of a contained reactor.
+            {
+                robotlinedetection_main_self[0]->_lf__reaction_3.output_produced[count++] = &robotlinedetection_main_self[0]->_lf_disp.line1.is_present;
+            }
+            // Reaction writes to an input of a contained reactor.
+            {
+                robotlinedetection_main_self[0]->_lf__reaction_3.output_produced[count++] = &robotlinedetection_main_self[0]->_lf_disp.line2.is_present;
+            }
+            // Reaction writes to an input of a contained reactor.
+            {
+                robotlinedetection_main_self[0]->_lf__reaction_3.output_produced[count++] = &robotlinedetection_main_self[0]->_lf_disp.line3.is_present;
             }
         }
         
         // ** End initialization for reaction 3 of RobotLineDetection
-        // Total number of outputs (single ports and multiport channels)
-        // produced by reaction_4 of RobotLineDetection.
-        robotlinedetection_main_self[0]->_lf__reaction_4.num_outputs = 3;
-        // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
-        // struct for this reaction.
-        robotlinedetection_main_self[0]->_lf__reaction_4.triggers = (trigger_t***)_lf_allocate(
-                3, sizeof(trigger_t**),
-                &robotlinedetection_main_self[0]->base.allocations);
-        robotlinedetection_main_self[0]->_lf__reaction_4.triggered_sizes = (int*)_lf_allocate(
-                3, sizeof(int),
-                &robotlinedetection_main_self[0]->base.allocations);
-        robotlinedetection_main_self[0]->_lf__reaction_4.output_produced = (bool**)_lf_allocate(
-                3, sizeof(bool*),
-                &robotlinedetection_main_self[0]->base.allocations);
-        {
-            int count = 0; SUPPRESS_UNUSED_WARNING(count);
-            // Reaction writes to an input of a contained reactor.
-            {
-                robotlinedetection_main_self[0]->_lf__reaction_4.output_produced[count++] = &robotlinedetection_main_self[0]->_lf_disp.line0.is_present;
-            }
-            // Reaction writes to an input of a contained reactor.
-            {
-                robotlinedetection_main_self[0]->_lf__reaction_4.output_produced[count++] = &robotlinedetection_main_self[0]->_lf_disp.line1.is_present;
-            }
-            // Reaction writes to an input of a contained reactor.
-            {
-                robotlinedetection_main_self[0]->_lf__reaction_4.output_produced[count++] = &robotlinedetection_main_self[0]->_lf_disp.line2.is_present;
-            }
-        }
-        
-        // ** End initialization for reaction 4 of RobotLineDetection
     
         // **** Start deferred initialize for RobotLineDetection.line
         {
@@ -365,16 +345,6 @@ void _lf_initialize_trigger_objects() {
             robotlinedetection_main_self[src_runtime]->_lf_disp.line2._base.num_destinations = 1;
             robotlinedetection_main_self[src_runtime]->_lf_disp.line2._base.source_reactor = (self_base_t*)robotlinedetection_main_self[src_runtime];
         }
-        // Set number of destination reactors for port disp.line3.
-        // Iterate over range RobotLineDetection.disp.line3(0,1)->[RobotLineDetection.disp.line3(0,1)].
-        {
-            int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-            int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-            int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-            robotlinedetection_main_self[src_runtime]->_lf_disp.line3._base.num_destinations = 1;
-            robotlinedetection_main_self[src_runtime]->_lf_disp.line3._base.source_reactor = (self_base_t*)robotlinedetection_main_self[src_runtime];
-        }
         // Set number of destination reactors for port line.calibrate.
         // Iterate over range RobotLineDetection.line.calibrate(0,1)->[RobotLineDetection.line.calibrate(0,1)].
         {
@@ -394,6 +364,16 @@ void _lf_initialize_trigger_objects() {
             int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
             robotlinedetection_main_self[src_runtime]->_lf_line.trigger._base.num_destinations = 1;
             robotlinedetection_main_self[src_runtime]->_lf_line.trigger._base.source_reactor = (self_base_t*)robotlinedetection_main_self[src_runtime];
+        }
+        // Set number of destination reactors for port disp.line3.
+        // Iterate over range RobotLineDetection.disp.line3(0,1)->[RobotLineDetection.disp.line3(0,1)].
+        {
+            int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+            int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+            int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+            robotlinedetection_main_self[src_runtime]->_lf_disp.line3._base.num_destinations = 1;
+            robotlinedetection_main_self[src_runtime]->_lf_disp.line3._base.source_reactor = (self_base_t*)robotlinedetection_main_self[src_runtime];
         }
         {
             int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
@@ -505,59 +485,21 @@ void _lf_initialize_trigger_objects() {
         }
         {
             int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
-            // Iterate over range RobotLineDetection.disp.line3(0,1)->[RobotLineDetection.disp.line3(0,1)].
-            {
-                int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-                int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-                int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-                int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                // Reaction 1 of RobotLineDetection triggers 1 downstream reactions
-                // through port RobotLineDetection.disp.line3.
-                robotlinedetection_main_self[src_runtime]->_lf__reaction_1.triggered_sizes[triggers_index[src_runtime]] = 1;
-                // For reaction 1 of RobotLineDetection, allocate an
-                // array of trigger pointers for downstream reactions through port RobotLineDetection.disp.line3
-                trigger_t** trigger_array = (trigger_t**)_lf_allocate(
-                        1, sizeof(trigger_t*),
-                        &robotlinedetection_main_self[src_runtime]->base.allocations); 
-                robotlinedetection_main_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime]++] = trigger_array;
-            }
-            for (int i = 0; i < 1; i++) triggers_index[i] = 0;
-            // Iterate over ranges RobotLineDetection.disp.line3(0,1)->[RobotLineDetection.disp.line3(0,1)] and RobotLineDetection.disp.line3(0,1).
-            {
-                int src_runtime = 0; // Runtime index.
-                SUPPRESS_UNUSED_WARNING(src_runtime);
-                int src_channel = 0; // Channel index.
-                SUPPRESS_UNUSED_WARNING(src_channel);
-                int src_bank = 0; // Bank index.
-                SUPPRESS_UNUSED_WARNING(src_bank);
-                // Iterate over range RobotLineDetection.disp.line3(0,1).
-                {
-                    int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                    int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                    int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                    // Point to destination port RobotLineDetection.disp.line3's trigger struct.
-                    robotlinedetection_main_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime] + src_channel][0] = &robotlinedetection_disp_self[dst_runtime]->_lf__line3;
-                }
-            }
-        }
-        {
-            int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
             // Iterate over range RobotLineDetection.line.calibrate(0,1)->[RobotLineDetection.line.calibrate(0,1)].
             {
                 int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
                 int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
                 int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
                 int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                // Reaction 2 of RobotLineDetection triggers 1 downstream reactions
+                // Reaction 1 of RobotLineDetection triggers 1 downstream reactions
                 // through port RobotLineDetection.line.calibrate.
-                robotlinedetection_main_self[src_runtime]->_lf__reaction_2.triggered_sizes[triggers_index[src_runtime]] = 1;
-                // For reaction 2 of RobotLineDetection, allocate an
+                robotlinedetection_main_self[src_runtime]->_lf__reaction_1.triggered_sizes[triggers_index[src_runtime]] = 1;
+                // For reaction 1 of RobotLineDetection, allocate an
                 // array of trigger pointers for downstream reactions through port RobotLineDetection.line.calibrate
                 trigger_t** trigger_array = (trigger_t**)_lf_allocate(
                         1, sizeof(trigger_t*),
                         &robotlinedetection_main_self[src_runtime]->base.allocations); 
-                robotlinedetection_main_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime]++] = trigger_array;
+                robotlinedetection_main_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime]++] = trigger_array;
             }
             for (int i = 0; i < 1; i++) triggers_index[i] = 0;
             // Iterate over ranges RobotLineDetection.line.calibrate(0,1)->[RobotLineDetection.line.calibrate(0,1)] and RobotLineDetection.line.calibrate(0,1).
@@ -575,7 +517,7 @@ void _lf_initialize_trigger_objects() {
                     int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                     int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
                     // Point to destination port RobotLineDetection.line.calibrate's trigger struct.
-                    robotlinedetection_main_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime] + src_channel][0] = &robotlinedetection_line_self[dst_runtime]->_lf__calibrate;
+                    robotlinedetection_main_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime] + src_channel][0] = &robotlinedetection_line_self[dst_runtime]->_lf__calibrate;
                 }
             }
         }
@@ -587,15 +529,15 @@ void _lf_initialize_trigger_objects() {
                 int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
                 int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
                 int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                // Reaction 3 of RobotLineDetection triggers 1 downstream reactions
+                // Reaction 2 of RobotLineDetection triggers 1 downstream reactions
                 // through port RobotLineDetection.line.trigger.
-                robotlinedetection_main_self[src_runtime]->_lf__reaction_3.triggered_sizes[triggers_index[src_runtime]] = 1;
-                // For reaction 3 of RobotLineDetection, allocate an
+                robotlinedetection_main_self[src_runtime]->_lf__reaction_2.triggered_sizes[triggers_index[src_runtime]] = 1;
+                // For reaction 2 of RobotLineDetection, allocate an
                 // array of trigger pointers for downstream reactions through port RobotLineDetection.line.trigger
                 trigger_t** trigger_array = (trigger_t**)_lf_allocate(
                         1, sizeof(trigger_t*),
                         &robotlinedetection_main_self[src_runtime]->base.allocations); 
-                robotlinedetection_main_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime]++] = trigger_array;
+                robotlinedetection_main_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime]++] = trigger_array;
             }
             for (int i = 0; i < 1; i++) triggers_index[i] = 0;
             // Iterate over ranges RobotLineDetection.line.trigger(0,1)->[RobotLineDetection.line.trigger(0,1)] and RobotLineDetection.line.trigger(0,1).
@@ -613,7 +555,7 @@ void _lf_initialize_trigger_objects() {
                     int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                     int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
                     // Point to destination port RobotLineDetection.line.trigger's trigger struct.
-                    robotlinedetection_main_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime] + src_channel][0] = &robotlinedetection_line_self[dst_runtime]->_lf__trigger;
+                    robotlinedetection_main_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime] + src_channel][0] = &robotlinedetection_line_self[dst_runtime]->_lf__trigger;
                 }
             }
         }
@@ -625,15 +567,15 @@ void _lf_initialize_trigger_objects() {
                 int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
                 int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
                 int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                // Reaction 4 of RobotLineDetection triggers 1 downstream reactions
+                // Reaction 3 of RobotLineDetection triggers 1 downstream reactions
                 // through port RobotLineDetection.disp.line0.
-                robotlinedetection_main_self[src_runtime]->_lf__reaction_4.triggered_sizes[triggers_index[src_runtime]] = 1;
-                // For reaction 4 of RobotLineDetection, allocate an
+                robotlinedetection_main_self[src_runtime]->_lf__reaction_3.triggered_sizes[triggers_index[src_runtime]] = 1;
+                // For reaction 3 of RobotLineDetection, allocate an
                 // array of trigger pointers for downstream reactions through port RobotLineDetection.disp.line0
                 trigger_t** trigger_array = (trigger_t**)_lf_allocate(
                         1, sizeof(trigger_t*),
                         &robotlinedetection_main_self[src_runtime]->base.allocations); 
-                robotlinedetection_main_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime]++] = trigger_array;
+                robotlinedetection_main_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime]++] = trigger_array;
             }
             // Iterate over range RobotLineDetection.disp.line1(0,1)->[RobotLineDetection.disp.line1(0,1)].
             {
@@ -641,15 +583,15 @@ void _lf_initialize_trigger_objects() {
                 int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
                 int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
                 int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                // Reaction 4 of RobotLineDetection triggers 1 downstream reactions
+                // Reaction 3 of RobotLineDetection triggers 1 downstream reactions
                 // through port RobotLineDetection.disp.line1.
-                robotlinedetection_main_self[src_runtime]->_lf__reaction_4.triggered_sizes[triggers_index[src_runtime]] = 1;
-                // For reaction 4 of RobotLineDetection, allocate an
+                robotlinedetection_main_self[src_runtime]->_lf__reaction_3.triggered_sizes[triggers_index[src_runtime]] = 1;
+                // For reaction 3 of RobotLineDetection, allocate an
                 // array of trigger pointers for downstream reactions through port RobotLineDetection.disp.line1
                 trigger_t** trigger_array = (trigger_t**)_lf_allocate(
                         1, sizeof(trigger_t*),
                         &robotlinedetection_main_self[src_runtime]->base.allocations); 
-                robotlinedetection_main_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime]++] = trigger_array;
+                robotlinedetection_main_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime]++] = trigger_array;
             }
             // Iterate over range RobotLineDetection.disp.line2(0,1)->[RobotLineDetection.disp.line2(0,1)].
             {
@@ -657,15 +599,31 @@ void _lf_initialize_trigger_objects() {
                 int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
                 int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
                 int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                // Reaction 4 of RobotLineDetection triggers 1 downstream reactions
+                // Reaction 3 of RobotLineDetection triggers 1 downstream reactions
                 // through port RobotLineDetection.disp.line2.
-                robotlinedetection_main_self[src_runtime]->_lf__reaction_4.triggered_sizes[triggers_index[src_runtime]] = 1;
-                // For reaction 4 of RobotLineDetection, allocate an
+                robotlinedetection_main_self[src_runtime]->_lf__reaction_3.triggered_sizes[triggers_index[src_runtime]] = 1;
+                // For reaction 3 of RobotLineDetection, allocate an
                 // array of trigger pointers for downstream reactions through port RobotLineDetection.disp.line2
                 trigger_t** trigger_array = (trigger_t**)_lf_allocate(
                         1, sizeof(trigger_t*),
                         &robotlinedetection_main_self[src_runtime]->base.allocations); 
-                robotlinedetection_main_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime]++] = trigger_array;
+                robotlinedetection_main_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime]++] = trigger_array;
+            }
+            // Iterate over range RobotLineDetection.disp.line3(0,1)->[RobotLineDetection.disp.line3(0,1)].
+            {
+                int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                // Reaction 3 of RobotLineDetection triggers 1 downstream reactions
+                // through port RobotLineDetection.disp.line3.
+                robotlinedetection_main_self[src_runtime]->_lf__reaction_3.triggered_sizes[triggers_index[src_runtime]] = 1;
+                // For reaction 3 of RobotLineDetection, allocate an
+                // array of trigger pointers for downstream reactions through port RobotLineDetection.disp.line3
+                trigger_t** trigger_array = (trigger_t**)_lf_allocate(
+                        1, sizeof(trigger_t*),
+                        &robotlinedetection_main_self[src_runtime]->base.allocations); 
+                robotlinedetection_main_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime]++] = trigger_array;
             }
             for (int i = 0; i < 1; i++) triggers_index[i] = 0;
             // Iterate over ranges RobotLineDetection.disp.line0(0,1)->[RobotLineDetection.disp.line0(0,1)] and RobotLineDetection.disp.line0(0,1).
@@ -683,7 +641,7 @@ void _lf_initialize_trigger_objects() {
                     int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                     int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
                     // Point to destination port RobotLineDetection.disp.line0's trigger struct.
-                    robotlinedetection_main_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime] + src_channel][0] = &robotlinedetection_disp_self[dst_runtime]->_lf__line0;
+                    robotlinedetection_main_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime] + src_channel][0] = &robotlinedetection_disp_self[dst_runtime]->_lf__line0;
                 }
             }
             for (int i = 0; i < 1; i++) triggers_index[i] = 1;
@@ -702,7 +660,7 @@ void _lf_initialize_trigger_objects() {
                     int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                     int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
                     // Point to destination port RobotLineDetection.disp.line1's trigger struct.
-                    robotlinedetection_main_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime] + src_channel][0] = &robotlinedetection_disp_self[dst_runtime]->_lf__line1;
+                    robotlinedetection_main_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime] + src_channel][0] = &robotlinedetection_disp_self[dst_runtime]->_lf__line1;
                 }
             }
             for (int i = 0; i < 1; i++) triggers_index[i] = 2;
@@ -721,7 +679,26 @@ void _lf_initialize_trigger_objects() {
                     int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                     int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
                     // Point to destination port RobotLineDetection.disp.line2's trigger struct.
-                    robotlinedetection_main_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime] + src_channel][0] = &robotlinedetection_disp_self[dst_runtime]->_lf__line2;
+                    robotlinedetection_main_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime] + src_channel][0] = &robotlinedetection_disp_self[dst_runtime]->_lf__line2;
+                }
+            }
+            for (int i = 0; i < 1; i++) triggers_index[i] = 3;
+            // Iterate over ranges RobotLineDetection.disp.line3(0,1)->[RobotLineDetection.disp.line3(0,1)] and RobotLineDetection.disp.line3(0,1).
+            {
+                int src_runtime = 0; // Runtime index.
+                SUPPRESS_UNUSED_WARNING(src_runtime);
+                int src_channel = 0; // Channel index.
+                SUPPRESS_UNUSED_WARNING(src_channel);
+                int src_bank = 0; // Bank index.
+                SUPPRESS_UNUSED_WARNING(src_bank);
+                // Iterate over range RobotLineDetection.disp.line3(0,1).
+                {
+                    int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                    int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                    int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Point to destination port RobotLineDetection.disp.line3's trigger struct.
+                    robotlinedetection_main_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime] + src_channel][0] = &robotlinedetection_disp_self[dst_runtime]->_lf__line3;
                 }
             }
         }
@@ -963,27 +940,14 @@ void _lf_initialize_trigger_objects() {
             }
         }
     }
-    // Add port RobotLineDetection.disp.line3 to array of is_present fields.
-    {
-        int count = 0; SUPPRESS_UNUSED_WARNING(count);
-        {
-            {
-                envs[robotlinedetection_main].is_present_fields[3 + count] = &robotlinedetection_main_self[0]->_lf_disp.line3.is_present;
-                #ifdef FEDERATED_DECENTRALIZED
-                envs[robotlinedetection_main]._lf_intended_tag_fields[3 + count] = &robotlinedetection_main_self[0]->_lf_disp.line3.intended_tag;
-                #endif // FEDERATED_DECENTRALIZED
-                count++;
-            }
-        }
-    }
     // Add port RobotLineDetection.line.calibrate to array of is_present fields.
     {
         int count = 0; SUPPRESS_UNUSED_WARNING(count);
         {
             {
-                envs[robotlinedetection_main].is_present_fields[4 + count] = &robotlinedetection_main_self[0]->_lf_line.calibrate.is_present;
+                envs[robotlinedetection_main].is_present_fields[3 + count] = &robotlinedetection_main_self[0]->_lf_line.calibrate.is_present;
                 #ifdef FEDERATED_DECENTRALIZED
-                envs[robotlinedetection_main]._lf_intended_tag_fields[4 + count] = &robotlinedetection_main_self[0]->_lf_line.calibrate.intended_tag;
+                envs[robotlinedetection_main]._lf_intended_tag_fields[3 + count] = &robotlinedetection_main_self[0]->_lf_line.calibrate.intended_tag;
                 #endif // FEDERATED_DECENTRALIZED
                 count++;
             }
@@ -994,9 +958,22 @@ void _lf_initialize_trigger_objects() {
         int count = 0; SUPPRESS_UNUSED_WARNING(count);
         {
             {
-                envs[robotlinedetection_main].is_present_fields[5 + count] = &robotlinedetection_main_self[0]->_lf_line.trigger.is_present;
+                envs[robotlinedetection_main].is_present_fields[4 + count] = &robotlinedetection_main_self[0]->_lf_line.trigger.is_present;
                 #ifdef FEDERATED_DECENTRALIZED
-                envs[robotlinedetection_main]._lf_intended_tag_fields[5 + count] = &robotlinedetection_main_self[0]->_lf_line.trigger.intended_tag;
+                envs[robotlinedetection_main]._lf_intended_tag_fields[4 + count] = &robotlinedetection_main_self[0]->_lf_line.trigger.intended_tag;
+                #endif // FEDERATED_DECENTRALIZED
+                count++;
+            }
+        }
+    }
+    // Add port RobotLineDetection.disp.line3 to array of is_present fields.
+    {
+        int count = 0; SUPPRESS_UNUSED_WARNING(count);
+        {
+            {
+                envs[robotlinedetection_main].is_present_fields[5 + count] = &robotlinedetection_main_self[0]->_lf_disp.line3.is_present;
+                #ifdef FEDERATED_DECENTRALIZED
+                envs[robotlinedetection_main]._lf_intended_tag_fields[5 + count] = &robotlinedetection_main_self[0]->_lf_disp.line3.intended_tag;
                 #endif // FEDERATED_DECENTRALIZED
                 count++;
             }
@@ -1030,24 +1007,20 @@ void _lf_initialize_trigger_objects() {
         // deadline 9223372036854775807 shifted left 16 bits.
         robotlinedetection_main_self[0]->_lf__reaction_2.index = 0xffffffffffff0002LL;
         robotlinedetection_main_self[0]->_lf__reaction_3.chain_id = 1;
-        // index is the OR of level 3 and 
+        // index is the OR of level 4 and 
         // deadline 9223372036854775807 shifted left 16 bits.
-        robotlinedetection_main_self[0]->_lf__reaction_3.index = 0xffffffffffff0003LL;
-        robotlinedetection_main_self[0]->_lf__reaction_4.chain_id = 1;
-        // index is the OR of level 5 and 
-        // deadline 9223372036854775807 shifted left 16 bits.
-        robotlinedetection_main_self[0]->_lf__reaction_4.index = 0xffffffffffff0005LL;
+        robotlinedetection_main_self[0]->_lf__reaction_3.index = 0xffffffffffff0004LL;
     
         // Set reaction priorities for ReactorInstance RobotLineDetection.line
         {
             robotlinedetection_line_self[0]->_lf__reaction_0.chain_id = 1;
+            // index is the OR of level 2 and 
+            // deadline 9223372036854775807 shifted left 16 bits.
+            robotlinedetection_line_self[0]->_lf__reaction_0.index = 0xffffffffffff0002LL;
+            robotlinedetection_line_self[0]->_lf__reaction_1.chain_id = 1;
             // index is the OR of level 3 and 
             // deadline 9223372036854775807 shifted left 16 bits.
-            robotlinedetection_line_self[0]->_lf__reaction_0.index = 0xffffffffffff0003LL;
-            robotlinedetection_line_self[0]->_lf__reaction_1.chain_id = 1;
-            // index is the OR of level 4 and 
-            // deadline 9223372036854775807 shifted left 16 bits.
-            robotlinedetection_line_self[0]->_lf__reaction_1.index = 0xffffffffffff0004LL;
+            robotlinedetection_line_self[0]->_lf__reaction_1.index = 0xffffffffffff0003LL;
         }
     
     
@@ -1058,9 +1031,9 @@ void _lf_initialize_trigger_objects() {
             // deadline 9223372036854775807 shifted left 16 bits.
             robotlinedetection_disp_self[0]->_lf__reaction_0.index = 0xffffffffffff0000LL;
             robotlinedetection_disp_self[0]->_lf__reaction_1.chain_id = 1;
-            // index is the OR of level 6 and 
+            // index is the OR of level 5 and 
             // deadline 9223372036854775807 shifted left 16 bits.
-            robotlinedetection_disp_self[0]->_lf__reaction_1.index = 0xffffffffffff0006LL;
+            robotlinedetection_disp_self[0]->_lf__reaction_1.index = 0xffffffffffff0005LL;
         }
     
     }

@@ -40,8 +40,8 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
 
   reaction(end_calibration) -> line.calibrate, motor.left_power, motor.right_power {=
   lf_set(line.calibrate, false);
-  lf_set(motor.left_power, 0.2f);
-  lf_set(motor.right_power, 0.2f);
+  lf_set(motor.left_power, 0.1f);
+  lf_set(motor.right_power, 0.1f);
   =}
 
   reaction(t) -> line.trigger {=
@@ -55,33 +55,33 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
           /* Motor feedback to stay on the correct path */
           //If the left side of the line sensors are detected, we shift the robot right
           if (line.reflect->value[0] >= 1000 || line.reflect->value[1] >= 1000) {
-            //Rotating wheels right
-            lf_set(motor.left_power, 0.15);
-            lf_set(motor.right_power, 0.1);
+            //Rotating wheels right to adjust to the right
+            lf_set(motor.left_power, 0.10);
+            lf_set(motor.right_power, 0.05);
           } 
 
           //Motors are correctly in the center
           if (line.reflect->value[2] >= 1000) {
             //Keep the wheels straight
-            lf_set(motor.left_power, 0.1);
-            lf_set(motor.right_power, 0.1);
+            lf_set(motor.left_power, 0.05);
+            lf_set(motor.right_power, 0.05);
           } 
 
           //If the right side of the line sensors are detected, we shift the robot left
           if (line.reflect->value[3] >= 1000 || line.reflect->value[4] >= 1000) {
             //Rotate the wheel left
-            lf_set(motor.left_power, 0.1);
-            lf_set(motor.right_power, 0.15);
+            lf_set(motor.left_power, 0.05);
+            lf_set(motor.right_power, 0.10);
           } 
       =} 
       
 
   }
 
-  mode OBSTACLE_DETECTED {
+  mode STOP_DETECTED {
       reaction(backup) -> DRIVE, motor.left_power, motor.right_power {=
-          lf_set(motor.left_power, 0.2f);
-          lf_set(motor.right_power, 0.2f);
+          lf_set(motor.left_power, 0.0f);
+          lf_set(motor.right_power, 0.0f);
           lf_set_mode(DRIVE);
       =}
   }
@@ -99,7 +99,7 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
     static char buf1[17];
     static char buf2[17];
     if (line.reflect->value[0] >= 1000 || line.reflect->value[1] >= 1000) {
-      snprintf(buf0, 17, "Left");
+      snprintf(buf0, 17, "Adjusting, Turning Right");
     } else {
       snprintf(buf0, 17, " ");
     }
@@ -109,7 +109,7 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
       snprintf(buf1, 17, " ");
     }
     if (line.reflect->value[3] >= 1000 || line.reflect->value[4] >= 1000) {
-      snprintf(buf2, 17, "Right");
+      snprintf(buf2, 17, "Adjusting, Turning Left.");
     } else { 
       snprintf(buf2, 17, " ");
     }

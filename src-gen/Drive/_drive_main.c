@@ -34,8 +34,8 @@ void _drive_mainreaction_function_1(void* instance_args) {
     motor.right_power = &(self->_lf_motor.right_power);
     #line 42 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     lf_set(line.calibrate, false);
-    lf_set(motor.left_power, 0.2f);
-    lf_set(motor.right_power, 0.2f);
+    lf_set(motor.left_power, 0.1f);
+    lf_set(motor.right_power, 0.1f);
 }
 #include "include/api/set_undef.h"
 #include "include/api/set.h"
@@ -71,23 +71,23 @@ void _drive_mainreaction_function_3(void* instance_args) {
               /* Motor feedback to stay on the correct path */
               //If the left side of the line sensors are detected, we shift the robot right
               if (line.reflect->value[0] >= 1000 || line.reflect->value[1] >= 1000) {
-                //Rotating wheels right
-                lf_set(motor.left_power, 0.15);
-                lf_set(motor.right_power, 0.1);
+                //Rotating wheels right to adjust to the right
+                lf_set(motor.left_power, 0.10);
+                lf_set(motor.right_power, 0.05);
               } 
     
               //Motors are correctly in the center
               if (line.reflect->value[2] >= 1000) {
                 //Keep the wheels straight
-                lf_set(motor.left_power, 0.1);
-                lf_set(motor.right_power, 0.1);
+                lf_set(motor.left_power, 0.05);
+                lf_set(motor.right_power, 0.05);
               } 
     
               //If the right side of the line sensors are detected, we shift the robot left
               if (line.reflect->value[3] >= 1000 || line.reflect->value[4] >= 1000) {
                 //Rotate the wheel left
-                lf_set(motor.left_power, 0.1);
-                lf_set(motor.right_power, 0.15);
+                lf_set(motor.left_power, 0.05);
+                lf_set(motor.right_power, 0.10);
               }
 }
 #include "include/api/set_undef.h"
@@ -104,8 +104,8 @@ void _drive_mainreaction_function_4(void* instance_args) {
     motor.left_power = &(self->_lf_motor.left_power);
     motor.right_power = &(self->_lf_motor.right_power);
     #line 83 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
-    lf_set(motor.left_power, 0.2f);
-    lf_set(motor.right_power, 0.2f);
+    lf_set(motor.left_power, 0.0f);
+    lf_set(motor.right_power, 0.0f);
     lf_set_mode(DRIVE);
 }
 #include "include/api/set_undef.h"
@@ -149,7 +149,7 @@ void _drive_mainreaction_function_6(void* instance_args) {
     static char buf1[17];
     static char buf2[17];
     if (line.reflect->value[0] >= 1000 || line.reflect->value[1] >= 1000) {
-      snprintf(buf0, 17, "Left");
+      snprintf(buf0, 17, "Adjusting, Turning Right");
     } else {
       snprintf(buf0, 17, " ");
     }
@@ -159,7 +159,7 @@ void _drive_mainreaction_function_6(void* instance_args) {
       snprintf(buf1, 17, " ");
     }
     if (line.reflect->value[3] >= 1000 || line.reflect->value[4] >= 1000) {
-      snprintf(buf2, 17, "Right");
+      snprintf(buf2, 17, "Adjusting, Turning Left.");
     } else { 
       snprintf(buf2, 17, " ");
     }
@@ -420,7 +420,7 @@ _drive_main_main_self_t* new__drive_main() {
     #line 81 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__modes[1].state = &_lf_self_base->_lf__mode_state;
     #line 81 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
-    self->_lf__modes[1].name = "OBSTACLE_DETECTED";
+    self->_lf__modes[1].name = "STOP_DETECTED";
     #line 81 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__modes[1].deactivation_time = 0;
     #line 81 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"

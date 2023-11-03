@@ -3,11 +3,11 @@
 #include "include/core/reactor.h"
 #include "_display.h"
 #include "_line.h"
-#ifndef TOP_LEVEL_PREAMBLE_1755223817_H
-#define TOP_LEVEL_PREAMBLE_1755223817_H
-#include <ir_sensors.h>
+#ifndef TOP_LEVEL_PREAMBLE_1609754699_H
+#define TOP_LEVEL_PREAMBLE_1609754699_H
 #include <pico/stdlib.h>
 #include <display.h>        // Do not use "display.h". Doesn't work.
+#include <ir_sensors.h>
 #endif
 typedef struct {
     struct self_base_t base;
@@ -43,22 +43,18 @@ typedef struct {
     int _lf_line_width;
     #line 27 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     reaction_t _lf__reaction_0;
-    #line 33 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    reaction_t _lf__reaction_1;
     #line 39 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    reaction_t _lf__reaction_2;
+    reaction_t _lf__reaction_1;
     #line 43 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    reaction_t _lf__reaction_3;
+    reaction_t _lf__reaction_2;
     #line 47 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    reaction_t _lf__reaction_4;
+    reaction_t _lf__reaction_3;
     #line 21 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     trigger_t _lf__t;
     #line 21 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     reaction_t* _lf__t_reactions[1];
     #line 23 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     trigger_t _lf__seconds;
-    #line 23 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    reaction_t* _lf__seconds_reactions[1];
     #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     trigger_t _lf__end_calibration;
     #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"

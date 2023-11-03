@@ -24,20 +24,6 @@ void _robotlinedetection_mainreaction_function_0(void* instance_args) {
 #include "include/api/set.h"
 void _robotlinedetection_mainreaction_function_1(void* instance_args) {
     _robotlinedetection_main_main_self_t* self = (_robotlinedetection_main_main_self_t*)instance_args; SUPPRESS_UNUSED_WARNING(self);
-    struct disp {
-        _display_line3_t* line3;
-    
-    } disp;
-    disp.line3 = &(self->_lf_disp.line3);
-    #line 34 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    static char buf[17];
-    snprintf(buf, 17, "time:%8d s", self->count++);
-    lf_set(disp.line3, buf);
-}
-#include "include/api/set_undef.h"
-#include "include/api/set.h"
-void _robotlinedetection_mainreaction_function_2(void* instance_args) {
-    _robotlinedetection_main_main_self_t* self = (_robotlinedetection_main_main_self_t*)instance_args; SUPPRESS_UNUSED_WARNING(self);
     struct line {
         _line_calibrate_t* calibrate;
     
@@ -48,7 +34,7 @@ void _robotlinedetection_mainreaction_function_2(void* instance_args) {
 }
 #include "include/api/set_undef.h"
 #include "include/api/set.h"
-void _robotlinedetection_mainreaction_function_3(void* instance_args) {
+void _robotlinedetection_mainreaction_function_2(void* instance_args) {
     _robotlinedetection_main_main_self_t* self = (_robotlinedetection_main_main_self_t*)instance_args; SUPPRESS_UNUSED_WARNING(self);
     struct line {
         _line_trigger_t* trigger;
@@ -60,7 +46,7 @@ void _robotlinedetection_mainreaction_function_3(void* instance_args) {
 }
 #include "include/api/set_undef.h"
 #include "include/api/set.h"
-void _robotlinedetection_mainreaction_function_4(void* instance_args) {
+void _robotlinedetection_mainreaction_function_3(void* instance_args) {
     _robotlinedetection_main_main_self_t* self = (_robotlinedetection_main_main_self_t*)instance_args; SUPPRESS_UNUSED_WARNING(self);
     struct line {
         _line_reflect_t* reflect;
@@ -70,34 +56,42 @@ void _robotlinedetection_mainreaction_function_4(void* instance_args) {
         _display_line0_t* line0;
     _display_line1_t* line1;
     _display_line2_t* line2;
+    _display_line3_t* line3;
     
     } disp;
     line.reflect = self->_lf_line.reflect;
     disp.line0 = &(self->_lf_disp.line0);
     disp.line1 = &(self->_lf_disp.line1);
     disp.line2 = &(self->_lf_disp.line2);
+    disp.line3 = &(self->_lf_disp.line3);
     #line 48 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     static char buf0[17];
     static char buf1[17];
     static char buf2[17];
-    if (line.reflect->value[0] >= 1000 || line.reflect->value[1] >= 1000) {
-      snprintf(buf0, 17, "Left [0]=%d, [1]=%d", line.reflect->value[0], line.reflect->value[1]);
-    } else {
-      snprintf(buf0, 17, "[0]=%d, [1]=%d", line.reflect->value[0], line.reflect->value[1]);
-    }
-    if (line.reflect->value[2] >= 1000) {
-      snprintf(buf1, 17, "Center [2]=%d", line.reflect->value[2]);
-    } else { 
-      snprintf(buf1, 17, "[2]=%d", line.reflect->value[2]);
-    }
-    if (line.reflect->value[3] >= 1000 || line.reflect->value[4] >= 1000) {
-      snprintf(buf2, 17, "Right [3]=%d, [4]=%d", line.reflect->value[3], line.reflect->value[4]);
-    } else { 
-      snprintf(buf2, 17, "Right [3]=%d, [4]=%d", line.reflect->value[3], line.reflect->value[4]);
-    }
+    static char buf3[17];
+    // if (line.reflect->value[0] >= 1000 || line.reflect->value[1] >= 1000) {
+    //   snprintf(buf0, 17, "Left [0]=%d", line.reflect->value[0]);
+    // } else {
+    //   snprintf(buf0, 17, "[0]=%d", line.reflect->value[0]);
+    // }
+    // if (line.reflect->value[2] >= 1000) {
+    //   snprintf(buf1, 17, "Center [2]=%d", line.reflect->value[2]);
+    // } else { 
+    //   snprintf(buf1, 17, "[2]=%d", line.reflect->value[2]);
+    // }
+    // if (line.reflect->value[3] >= 1000 || line.reflect->value[4] >= 1000) {
+    //   snprintf(buf2, 17, "Right [4]=%d", line.reflect->value[4]);
+    // } else { 
+    //   snprintf(buf2, 17, "[4]=%d", line.reflect->value[3], line.reflect->value[4]);
+    // }
+    snprintf(buf0, 17, "[0]=%d", line.reflect->value[0]);
+    snprintf(buf1, 17, "[1]=%d", line.reflect->value[1]);
+    snprintf(buf2, 17, "2=%d,3=%d", line.reflect->value[2], line.reflect->value[3]);
+    snprintf(buf3, 17, "[4]=%d", line.reflect->value[4]);
     lf_set(disp.line0, buf0);
     lf_set(disp.line1, buf1);
     lf_set(disp.line2, buf2);
+    lf_set(disp.line3, buf3);
 }
 #include "include/api/set_undef.h"
 _robotlinedetection_main_main_self_t* new__robotlinedetection_main() {
@@ -115,7 +109,7 @@ _robotlinedetection_main_main_self_t* new__robotlinedetection_main() {
     #line 40 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/Line.lf"
     #endif // FEDERATED_DECENTRALIZED
     #line 40 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/Line.lf"
-    self->_lf_line.reflect_reactions[0] = &self->_lf__reaction_4;
+    self->_lf_line.reflect_reactions[0] = &self->_lf__reaction_3;
     #line 40 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/Line.lf"
     self->_lf_line.reflect_trigger.reactions = self->_lf_line.reflect_reactions;
     #line 40 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/Line.lf"
@@ -142,62 +136,48 @@ _robotlinedetection_main_main_self_t* new__robotlinedetection_main() {
     self->_lf__reaction_0.name = "?";
     #line 27 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_0.mode = NULL;
-    #line 33 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 39 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_1.number = 1;
-    #line 33 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 39 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_1.function = _robotlinedetection_mainreaction_function_1;
-    #line 33 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 39 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_1.self = self;
-    #line 33 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 39 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_1.deadline_violation_handler = NULL;
-    #line 33 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 39 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_1.STP_handler = NULL;
-    #line 33 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 39 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_1.name = "?";
-    #line 33 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 39 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_1.mode = NULL;
-    #line 39 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 43 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_2.number = 2;
-    #line 39 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 43 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_2.function = _robotlinedetection_mainreaction_function_2;
-    #line 39 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 43 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_2.self = self;
-    #line 39 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 43 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_2.deadline_violation_handler = NULL;
-    #line 39 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 43 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_2.STP_handler = NULL;
-    #line 39 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 43 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_2.name = "?";
-    #line 39 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 43 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_2.mode = NULL;
-    #line 43 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 47 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_3.number = 3;
-    #line 43 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 47 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_3.function = _robotlinedetection_mainreaction_function_3;
-    #line 43 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 47 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_3.self = self;
-    #line 43 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 47 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_3.deadline_violation_handler = NULL;
-    #line 43 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 47 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_3.STP_handler = NULL;
-    #line 43 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 47 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_3.name = "?";
-    #line 43 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
+    #line 47 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__reaction_3.mode = NULL;
-    #line 47 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    self->_lf__reaction_4.number = 4;
-    #line 47 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    self->_lf__reaction_4.function = _robotlinedetection_mainreaction_function_4;
-    #line 47 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    self->_lf__reaction_4.self = self;
-    #line 47 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    self->_lf__reaction_4.deadline_violation_handler = NULL;
-    #line 47 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    self->_lf__reaction_4.STP_handler = NULL;
-    #line 47 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    self->_lf__reaction_4.name = "?";
-    #line 47 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    self->_lf__reaction_4.mode = NULL;
     #line 21 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__t.last = NULL;
     #line 21 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
@@ -208,7 +188,7 @@ _robotlinedetection_main_main_self_t* new__robotlinedetection_main() {
     #endif // FEDERATED_DECENTRALIZED
     #line 21 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     #line 21 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    self->_lf__t_reactions[0] = &self->_lf__reaction_3;
+    self->_lf__t_reactions[0] = &self->_lf__reaction_2;
     #line 21 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__t.reactions = &self->_lf__t_reactions[0];
     #line 21 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
@@ -231,19 +211,6 @@ _robotlinedetection_main_main_self_t* new__robotlinedetection_main() {
     self->_lf__seconds.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
     #line 23 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     #endif // FEDERATED_DECENTRALIZED
-    #line 23 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    #line 23 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    self->_lf__seconds_reactions[0] = &self->_lf__reaction_1;
-    #line 23 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    self->_lf__seconds.reactions = &self->_lf__seconds_reactions[0];
-    #line 23 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    self->_lf__seconds.number_of_reactions = 1;
-    #line 23 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    #ifdef FEDERATED
-    #line 23 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    self->_lf__seconds.physical_time_of_arrival = NEVER;
-    #line 23 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    #endif // FEDERATED
     self->_lf__seconds.is_timer = true;
     #ifdef FEDERATED_DECENTRALIZED
     self->_lf__seconds.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
@@ -258,7 +225,7 @@ _robotlinedetection_main_main_self_t* new__robotlinedetection_main() {
     #endif // FEDERATED_DECENTRALIZED
     #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
-    self->_lf__end_calibration_reactions[0] = &self->_lf__reaction_2;
+    self->_lf__end_calibration_reactions[0] = &self->_lf__reaction_1;
     #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
     self->_lf__end_calibration.reactions = &self->_lf__end_calibration_reactions[0];
     #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/RobotLineDetection.lf"
