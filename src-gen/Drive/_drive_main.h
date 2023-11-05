@@ -4,8 +4,8 @@
 #include "_display.h"
 #include "_line.h"
 #include "_motors.h"
-#ifndef TOP_LEVEL_PREAMBLE_1121659461_H
-#define TOP_LEVEL_PREAMBLE_1121659461_H
+#ifndef TOP_LEVEL_PREAMBLE_1076462213_H
+#define TOP_LEVEL_PREAMBLE_1076462213_H
 #include <ir_sensors.h>
 #include <motors.h>
 #include <pico/stdlib.h>
@@ -20,8 +20,6 @@ typedef struct {
     #line 27 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     int count;
     struct {
-        #line 28 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/Display.lf"
-        _display_line3_t line3;
         #line 25 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/Display.lf"
         _display_line0_t line0;
         #line 26 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/Display.lf"
@@ -40,7 +38,7 @@ typedef struct {
         #line 40 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/Line.lf"
         trigger_t reflect_trigger;
         #line 40 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/Line.lf"
-        reaction_t* reflect_reactions[2];
+        reaction_t* reflect_reactions[1];
     } _lf_line;
     int _lf_line_width;
     struct {
@@ -50,39 +48,29 @@ typedef struct {
         _motors_right_power_t right_power;
     } _lf_motor;
     int _lf_motor_width;
-    #line 32 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
-    reaction_t _lf__reaction_0;
     #line 38 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    reaction_t _lf__reaction_0;
+    #line 45 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     reaction_t _lf__reaction_1;
-    #line 44 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 51 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     reaction_t _lf__reaction_2;
-    #line 49 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 56 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     reaction_t _lf__reaction_3;
-    #line 72 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
-    reaction_t _lf__reaction_4;
-    #line 80 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
-    reaction_t _lf__reaction_5;
-    #line 87 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
-    reaction_t _lf__reaction_6;
     #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     trigger_t _lf__t;
     #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     reaction_t* _lf__t_reactions[1];
     #line 25 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     trigger_t _lf__seconds;
-    #line 25 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
-    reaction_t* _lf__seconds_reactions[1];
     #line 26 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     trigger_t _lf__end_calibration;
     #line 26 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     reaction_t* _lf__end_calibration_reactions[1];
-    #line 29 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 28 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     trigger_t _lf__backup;
-    #line 29 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
-    reaction_t* _lf__backup_reactions[1];
     trigger_t _lf__startup;
     reaction_t* _lf__startup_reactions[1];
-    reactor_mode_t _lf__modes[2];
+    reactor_mode_t _lf__modes[1];
 } _drive_main_main_self_t;
 _drive_main_main_self_t* new__drive_main();
 #endif // _DRIVE_MAIN_H

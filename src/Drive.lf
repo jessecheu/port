@@ -14,7 +14,7 @@
   
   import Line from "lib/Line.lf"
   import Display from "lib/Display.lf"
-  import MotorsWithFeedback as Motors from "lib/MotorsWithFeedback.lf"
+  import Motors as Motors from "lib/Motors.lf"
   
   main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
     line = new Line()
@@ -25,20 +25,27 @@
     timer seconds(0, 1 s)
     timer end_calibration(calibration_time)
     state count: int = 0
-  
     timer backup(0, 500 ms)
   
   
-    reaction(seconds) -> disp.line3 {=
-    static char buf[17];
-    snprintf(buf, 17, "time:%8d s", self->count++);
-    lf_set(disp.line3, buf);
+    // reaction(seconds) -> disp.line3 {=
+    //   static char buf[17];
+    //   snprintf(buf, 17, "time:%8d s", self->count++);
+    //   lf_set(disp.line3, buf);
+    // =}
+
+    //Calibrating the line sensors
+    reaction(startup) -> disp.line0, disp.line1, disp.line2 {=
+      lf_set(disp.line0, "CALIBRATING");
+      lf_set(disp.line1, "Roll robot over");
+      lf_set(disp.line2, "light and dark.");
+      
     =}
-  
+
     reaction(end_calibration) -> line.calibrate, motor.left_power, motor.right_power {=
-    lf_set(line.calibrate, false);
-    lf_set(motor.left_power, 0.10f);
-    lf_set(motor.right_power, 0.10f);
+      lf_set(line.calibrate, false);
+      lf_set(motor.left_power, 0.10f);
+      lf_set(motor.right_power, 0.10f);
     =}
   
     reaction(t) -> line.trigger {=
@@ -46,52 +53,44 @@
     =}
   
     initial mode DRIVE {
-        reaction(line.reflect) -> motor.left_power, motor.right_power{= 
-                //Logic            
-            } 
+        reaction(line.reflect) -> motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2 {= 
+          //Logic for driving
+          //Printing to the LED Screen
+          static char buf0[17];
+          static char buf1[17];
+          static char buf2[17];
+
+          //As the vehicle detects black lines in the left and right line sensors 
+          //the motors should increase and decrease depending on the intensity of the line sensors
+          if (line.reflect->value[0] > 800) {
+            //Left line sensor, turning the motors right to adjust the car back to the right.
+            uint32_t feedback_adjustment = 0.10f + (line.reflect->value[0] / 5000); //As the line sensor value increases, the adj should be larger
+            lf_set(motor.left_power, 0.15f);
+            lf_set(motor.right_power, feedback_adjustment);
+
+            snprintf(buf0, 17, "Left");
+          } else { 
+            snprintf(buf0, 17, " ");
+          }
+          
+          if (line.reflect->value[4] > 800) {
+            //Right line sensor, turning the motors left to adjust the car back to the left.
+            uint32_t feedback_adjustment = 0.10f + (line.reflect->value[4] / 5000); //As the line sensor value increases, the adj should be larger
+            lf_set(motor.left_power, 0.15f);
+            lf_set(motor.right_power, feedback_adjustment);
+
+            snprintf(buf2, 17, "Right");
+          } else {
+            snprintf(buf2, 17, " ");
+          }
+
+          lf_set(disp.line0, buf0);
+          lf_set(disp.line1, buf1);
+          lf_set(disp.line2, buf2);
         =} 
         
   
     }
   
-    mode STOP_DETECTED {
-        reaction(backup) -> DRIVE, motor.left_power, motor.right_power {=
-            lf_set(motor.left_power, 0.0f);
-            lf_set(motor.right_power, 0.0f);
-            lf_set_mode(DRIVE);
-        =}
-    }
-  
-  
-    reaction(startup) -> disp.line0, disp.line1, disp.line2 {=
-      lf_set(disp.line0, "CALIBRATING");
-      lf_set(disp.line1, "Roll robot over");
-      lf_set(disp.line2, "light and dark.");
-      
-    =}
-  
-    reaction(line.reflect) -> disp.line0, disp.line1, disp.line2 {=
-      static char buf0[17];
-      static char buf1[17];
-      static char buf2[17];
-      if (line.reflect->value[0] >= 1000) {
-        snprintf(buf0, 17, "Right");
-      } else {
-        snprintf(buf0, 17, " ");
-      }
-      if (line.reflect->value[2] >= 1000) {
-        snprintf(buf1, 17, "Center");
-      } else { 
-        snprintf(buf1, 17, " ");
-      }
-      if (line.reflect->value[4] >= 1000) {
-        snprintf(buf2, 17, "Left.");
-      } else { 
-        snprintf(buf2, 17, " ");
-      }
-      lf_set(disp.line0, buf0);
-      lf_set(disp.line1, buf1);
-      lf_set(disp.line2, buf2);
-    =}
   }
   
