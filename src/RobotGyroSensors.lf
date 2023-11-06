@@ -1,6 +1,5 @@
 /**
- * Line detection on Pololu 3pi+ 2040 Robot using a taped black line on the ground
- * Tests the five line sensors on the robot.
+ * Testing the Gyro on Pololu 3pi+ 2040 Robot 
  *
  */
  target C {
