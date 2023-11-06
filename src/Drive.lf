@@ -29,7 +29,7 @@
     timer t(0, sample_period)
     timer seconds(0, 1 s)
     timer end_calibration(calibration_time)
-    state count: int = 0
+    state angle_before_turn: float = 0
     timer backup(0, 500 ms)
 
     state distance:float = 0
@@ -54,7 +54,7 @@
     =}
   
     initial mode DRIVE {
-        reaction(line.reflect) -> TURN_RIGHT, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {= 
+        reaction(line.reflect) gyro.z -> TURN_CORNER, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {= 
           //Logic for driving
           //Printing to the LED Screen
           static char buf0[17];
@@ -75,8 +75,8 @@
           }
 
           if(line.reflect->value[2] > 800) {
-            lf_set(motor.left_power, 0.05f);
-            lf_set(motor.right_power, 0.05f);
+            lf_set(motor.left_power, 0.1f);
+            lf_set(motor.right_power, 0.1f);
             snprintf(buf1, 17, "Centered");
           } else {
             snprintf(buf1, 17, " ");
@@ -96,9 +96,11 @@
             //this means that there is a turn. We turn 90degrees to the right.
             // lf_set(motor.left_power, 0.15f);
             // lf_set(motor.right_power, 0.1f);'
-            lf_set(motor.left_power, 0);
-            lf_set(motor.right_power, 0);
-            snprintf(buf3, 17, "Turn Right");
+            lf_set(motor.left_power, 0.20);
+            lf_set(motor.right_power, -0.075f);
+            self->angle_before_turn = gyro.z->value;
+            lf_set_mode(TURN_CORNER);
+            snprintf(buf3, 17, "R: %.1f", gyro.z->value);
           }
 
 
@@ -107,9 +109,11 @@
             //this means that there is a turn. We turn 90degrees to the right.
             // lf_set(motor.left_power, 0.15f);
             // lf_set(motor.right_power, 0.1f);'
-            lf_set(motor.left_power, 0);
-            lf_set(motor.right_power, 0);
-            snprintf(buf3, 17, "Turn Left Detected");
+            lf_set(motor.left_power, -0.075f);
+            lf_set(motor.right_power, 0.20f);
+            self->angle_before_turn = gyro.z->value;
+            lf_set_mode(TURN_CORNER);
+            snprintf(buf3, 17, "D: %.1f", gyro.z->value);
           }
 
 
@@ -122,14 +126,17 @@
   
     }
 
-    mode TURN_RIGHT { 
+    mode TURN_CORNER { 
       //Use gyro to check if the turn has been made completely before changing to DRIVE mode again
 
-      reaction(gyro.z) -> DRIVE, motor.left_power, motor.right_power {=
-        if (gyro.z->value - self->angle <= -90) {
-          lf_set_mode(DRIVING);
-          lf_set(motors.left_power, 0.15);
-          lf_set(motors.right_power, 0.15);
+      reaction(gyro.z) -> DRIVE, motor.left_power, motor.right_power, disp.line0, disp.line3 {=
+        //gyro.z = -90, angle_before_turn = -10, result = -80
+        lf_set(disp.line0, "TURN_CORNER Mode");
+        if (abs(gyro.z->value - self->angle_before_turn) >= 80) {
+          lf_set(motor.left_power, 0.1);
+          lf_set(motor.right_power, 0.1);
+          lf_set(disp.line3, " ");
+          lf_set_mode(DRIVE);
         }
       =}
     }

@@ -84,8 +84,8 @@ void _lf_initialize_trigger_objects() {
     envs[drive_main].startup_reactions[startup_reaction_count[drive_main]++] = &drive_main_self[0]->_lf__reaction_0;
     SUPPRESS_UNUSED_WARNING(_lf_watchdog_count);
     { // For scoping
-        static int _initial = 0;
-        drive_main_self[0]->count = _initial;
+        static float _initial = 0;
+        drive_main_self[0]->angle_before_turn = _initial;
     } // End scoping.
     { // For scoping
         static float _initial = 0;
@@ -456,17 +456,17 @@ void _lf_initialize_trigger_objects() {
         // ** End initialization for reaction 3 of Drive
         // Total number of outputs (single ports and multiport channels)
         // produced by reaction_4 of Drive.
-        drive_main_self[0]->_lf__reaction_4.num_outputs = 2;
+        drive_main_self[0]->_lf__reaction_4.num_outputs = 4;
         // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
         // struct for this reaction.
         drive_main_self[0]->_lf__reaction_4.triggers = (trigger_t***)_lf_allocate(
-                2, sizeof(trigger_t**),
+                4, sizeof(trigger_t**),
                 &drive_main_self[0]->base.allocations);
         drive_main_self[0]->_lf__reaction_4.triggered_sizes = (int*)_lf_allocate(
-                2, sizeof(int),
+                4, sizeof(int),
                 &drive_main_self[0]->base.allocations);
         drive_main_self[0]->_lf__reaction_4.output_produced = (bool**)_lf_allocate(
-                2, sizeof(bool*),
+                4, sizeof(bool*),
                 &drive_main_self[0]->base.allocations);
         {
             int count = 0; SUPPRESS_UNUSED_WARNING(count);
@@ -477,6 +477,14 @@ void _lf_initialize_trigger_objects() {
             // Reaction writes to an input of a contained reactor.
             {
                 drive_main_self[0]->_lf__reaction_4.output_produced[count++] = &drive_main_self[0]->_lf_motor.right_power.is_present;
+            }
+            // Reaction writes to an input of a contained reactor.
+            {
+                drive_main_self[0]->_lf__reaction_4.output_produced[count++] = &drive_main_self[0]->_lf_disp.line0.is_present;
+            }
+            // Reaction writes to an input of a contained reactor.
+            {
+                drive_main_self[0]->_lf__reaction_4.output_produced[count++] = &drive_main_self[0]->_lf_disp.line3.is_present;
             }
         }
         
@@ -1372,6 +1380,38 @@ void _lf_initialize_trigger_objects() {
                         &drive_main_self[src_runtime]->base.allocations); 
                 drive_main_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime]++] = trigger_array;
             }
+            // Iterate over range Drive.disp.line0(0,1)->[Drive.disp.line0(0,1)].
+            {
+                int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                // Reaction 4 of Drive triggers 1 downstream reactions
+                // through port Drive.disp.line0.
+                drive_main_self[src_runtime]->_lf__reaction_4.triggered_sizes[triggers_index[src_runtime]] = 1;
+                // For reaction 4 of Drive, allocate an
+                // array of trigger pointers for downstream reactions through port Drive.disp.line0
+                trigger_t** trigger_array = (trigger_t**)_lf_allocate(
+                        1, sizeof(trigger_t*),
+                        &drive_main_self[src_runtime]->base.allocations); 
+                drive_main_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime]++] = trigger_array;
+            }
+            // Iterate over range Drive.disp.line3(0,1)->[Drive.disp.line3(0,1)].
+            {
+                int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                // Reaction 4 of Drive triggers 1 downstream reactions
+                // through port Drive.disp.line3.
+                drive_main_self[src_runtime]->_lf__reaction_4.triggered_sizes[triggers_index[src_runtime]] = 1;
+                // For reaction 4 of Drive, allocate an
+                // array of trigger pointers for downstream reactions through port Drive.disp.line3
+                trigger_t** trigger_array = (trigger_t**)_lf_allocate(
+                        1, sizeof(trigger_t*),
+                        &drive_main_self[src_runtime]->base.allocations); 
+                drive_main_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime]++] = trigger_array;
+            }
             for (int i = 0; i < 1; i++) triggers_index[i] = 0;
             // Iterate over ranges Drive.motor.left_power(0,1)->[Drive.motor.left_power(0,1)] and Drive.motor.left_power(0,1).
             {
@@ -1408,6 +1448,44 @@ void _lf_initialize_trigger_objects() {
                     int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
                     // Point to destination port Drive.motor.right_power's trigger struct.
                     drive_main_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime] + src_channel][0] = &drive_motor_self[dst_runtime]->_lf__right_power;
+                }
+            }
+            for (int i = 0; i < 1; i++) triggers_index[i] = 2;
+            // Iterate over ranges Drive.disp.line0(0,1)->[Drive.disp.line0(0,1)] and Drive.disp.line0(0,1).
+            {
+                int src_runtime = 0; // Runtime index.
+                SUPPRESS_UNUSED_WARNING(src_runtime);
+                int src_channel = 0; // Channel index.
+                SUPPRESS_UNUSED_WARNING(src_channel);
+                int src_bank = 0; // Bank index.
+                SUPPRESS_UNUSED_WARNING(src_bank);
+                // Iterate over range Drive.disp.line0(0,1).
+                {
+                    int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                    int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                    int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Point to destination port Drive.disp.line0's trigger struct.
+                    drive_main_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime] + src_channel][0] = &drive_disp_self[dst_runtime]->_lf__line0;
+                }
+            }
+            for (int i = 0; i < 1; i++) triggers_index[i] = 3;
+            // Iterate over ranges Drive.disp.line3(0,1)->[Drive.disp.line3(0,1)] and Drive.disp.line3(0,1).
+            {
+                int src_runtime = 0; // Runtime index.
+                SUPPRESS_UNUSED_WARNING(src_runtime);
+                int src_channel = 0; // Channel index.
+                SUPPRESS_UNUSED_WARNING(src_channel);
+                int src_bank = 0; // Bank index.
+                SUPPRESS_UNUSED_WARNING(src_bank);
+                // Iterate over range Drive.disp.line3(0,1).
+                {
+                    int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                    int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                    int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Point to destination port Drive.disp.line3's trigger struct.
+                    drive_main_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime] + src_channel][0] = &drive_disp_self[dst_runtime]->_lf__line3;
                 }
             }
         }
@@ -2249,13 +2327,13 @@ void _lf_initialize_trigger_objects() {
         // deadline 9223372036854775807 shifted left 16 bits.
         drive_main_self[0]->_lf__reaction_2.index = 0xffffffffffff0002LL;
         drive_main_self[0]->_lf__reaction_3.chain_id = 1;
-        // index is the OR of level 4 and 
-        // deadline 9223372036854775807 shifted left 16 bits.
-        drive_main_self[0]->_lf__reaction_3.index = 0xffffffffffff0004LL;
-        drive_main_self[0]->_lf__reaction_4.chain_id = 1;
         // index is the OR of level 5 and 
         // deadline 9223372036854775807 shifted left 16 bits.
-        drive_main_self[0]->_lf__reaction_4.index = 0xffffffffffff0005LL;
+        drive_main_self[0]->_lf__reaction_3.index = 0xffffffffffff0005LL;
+        drive_main_self[0]->_lf__reaction_4.chain_id = 1;
+        // index is the OR of level 6 and 
+        // deadline 9223372036854775807 shifted left 16 bits.
+        drive_main_self[0]->_lf__reaction_4.index = 0xffffffffffff0006LL;
     
         // Set reaction priorities for ReactorInstance Drive.line
         {
@@ -2277,9 +2355,9 @@ void _lf_initialize_trigger_objects() {
             // deadline 9223372036854775807 shifted left 16 bits.
             drive_disp_self[0]->_lf__reaction_0.index = 0xffffffffffff0000LL;
             drive_disp_self[0]->_lf__reaction_1.chain_id = 1;
-            // index is the OR of level 5 and 
+            // index is the OR of level 7 and 
             // deadline 9223372036854775807 shifted left 16 bits.
-            drive_disp_self[0]->_lf__reaction_1.index = 0xffffffffffff0005LL;
+            drive_disp_self[0]->_lf__reaction_1.index = 0xffffffffffff0007LL;
         }
     
     
@@ -2290,13 +2368,13 @@ void _lf_initialize_trigger_objects() {
             // deadline 9223372036854775807 shifted left 16 bits.
             drive_motor_self[0]->_lf__reaction_0.index = 0xffffffffffff0000LL;
             drive_motor_self[0]->_lf__reaction_1.chain_id = 1;
-            // index is the OR of level 6 and 
-            // deadline 9223372036854775807 shifted left 16 bits.
-            drive_motor_self[0]->_lf__reaction_1.index = 0xffffffffffff0006LL;
-            drive_motor_self[0]->_lf__reaction_2.chain_id = 1;
             // index is the OR of level 7 and 
             // deadline 9223372036854775807 shifted left 16 bits.
-            drive_motor_self[0]->_lf__reaction_2.index = 0xffffffffffff0007LL;
+            drive_motor_self[0]->_lf__reaction_1.index = 0xffffffffffff0007LL;
+            drive_motor_self[0]->_lf__reaction_2.chain_id = 1;
+            // index is the OR of level 8 and 
+            // deadline 9223372036854775807 shifted left 16 bits.
+            drive_motor_self[0]->_lf__reaction_2.index = 0xffffffffffff0008LL;
         }
     
     

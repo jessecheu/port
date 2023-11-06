@@ -67,6 +67,10 @@ void _drive_mainreaction_function_3(void* instance_args) {
         _line_reflect_t* reflect;
     
     } line;
+    struct gyro {
+        _gyroangle_z_t* z;
+    
+    } gyro;
     struct motor {
         _motors_left_power_t* left_power;
     _motors_right_power_t* right_power;
@@ -80,8 +84,9 @@ void _drive_mainreaction_function_3(void* instance_args) {
     
     } disp;
     line.reflect = self->_lf_line.reflect;
-    reactor_mode_t* TURN_RIGHT = &self->_lf__modes[1];
-    lf_mode_change_type_t _lf_TURN_RIGHT_change_type = reset_transition;
+    gyro.z = self->_lf_gyro.z;
+    reactor_mode_t* TURN_CORNER = &self->_lf__modes[1];
+    lf_mode_change_type_t _lf_TURN_CORNER_change_type = reset_transition;
     motor.left_power = &(self->_lf_motor.left_power);
     motor.right_power = &(self->_lf_motor.right_power);
     disp.line0 = &(self->_lf_disp.line0);
@@ -109,8 +114,8 @@ void _drive_mainreaction_function_3(void* instance_args) {
               }
     
               if(line.reflect->value[2] > 800) {
-                lf_set(motor.left_power, 0.05f);
-                lf_set(motor.right_power, 0.05f);
+                lf_set(motor.left_power, 0.1f);
+                lf_set(motor.right_power, 0.1f);
                 snprintf(buf1, 17, "Centered");
               } else {
                 snprintf(buf1, 17, " ");
@@ -130,9 +135,11 @@ void _drive_mainreaction_function_3(void* instance_args) {
                 //this means that there is a turn. We turn 90degrees to the right.
                 // lf_set(motor.left_power, 0.15f);
                 // lf_set(motor.right_power, 0.1f);'
-                lf_set(motor.left_power, 0);
-                lf_set(motor.right_power, 0);
-                snprintf(buf3, 17, "Turn Right");
+                lf_set(motor.left_power, 0.20);
+                lf_set(motor.right_power, -0.075f);
+                self->angle_before_turn = gyro.z->value;
+                lf_set_mode(TURN_CORNER);
+                snprintf(buf3, 17, "R: %.1f", gyro.z->value);
               }
     
     
@@ -141,9 +148,11 @@ void _drive_mainreaction_function_3(void* instance_args) {
                 //this means that there is a turn. We turn 90degrees to the right.
                 // lf_set(motor.left_power, 0.15f);
                 // lf_set(motor.right_power, 0.1f);'
-                lf_set(motor.left_power, 0);
-                lf_set(motor.right_power, 0);
-                snprintf(buf3, 17, "Turn Left Detected");
+                lf_set(motor.left_power, -0.075f);
+                lf_set(motor.right_power, 0.20f);
+                self->angle_before_turn = gyro.z->value;
+                lf_set_mode(TURN_CORNER);
+                snprintf(buf3, 17, "D: %.1f", gyro.z->value);
               }
     
     
@@ -165,16 +174,26 @@ void _drive_mainreaction_function_4(void* instance_args) {
     _motors_right_power_t* right_power;
     
     } motor;
+    struct disp {
+        _display_line0_t* line0;
+    _display_line3_t* line3;
+    
+    } disp;
     gyro.z = self->_lf_gyro.z;
     reactor_mode_t* DRIVE = &self->_lf__modes[0];
     lf_mode_change_type_t _lf_DRIVE_change_type = reset_transition;
     motor.left_power = &(self->_lf_motor.left_power);
     motor.right_power = &(self->_lf_motor.right_power);
-    #line 129 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
-    if (gyro.z->value - self->angle <= -90) {
-      lf_set_mode(DRIVING);
-      lf_set(motors.left_power, 0.15);
-      lf_set(motors.right_power, 0.15);
+    disp.line0 = &(self->_lf_disp.line0);
+    disp.line3 = &(self->_lf_disp.line3);
+    #line 133 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    //gyro.z = -90, angle_before_turn = -10, result = -80
+    lf_set(disp.line0, "TURN_CORNER Mode");
+    if (abs(gyro.z->value - self->angle_before_turn) >= 80) {
+      lf_set(motor.left_power, 0.1);
+      lf_set(motor.right_power, 0.1);
+      lf_set(disp.line3, " ");
+      lf_set_mode(DRIVE);
     }
 }
 #include "include/api/set_undef.h"
@@ -288,19 +307,19 @@ _drive_main_main_self_t* new__drive_main() {
     self->_lf__reaction_3.name = "?";
     #line 57 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_3.mode = &self->_lf__modes[0];
-    #line 128 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 132 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_4.number = 4;
-    #line 128 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 132 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_4.function = _drive_mainreaction_function_4;
-    #line 128 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 132 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_4.self = self;
-    #line 128 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 132 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_4.deadline_violation_handler = NULL;
-    #line 128 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 132 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_4.STP_handler = NULL;
-    #line 128 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 132 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_4.name = "?";
-    #line 128 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 132 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_4.mode = &self->_lf__modes[1];
     #line 29 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__t.last = NULL;
@@ -394,13 +413,13 @@ _drive_main_main_self_t* new__drive_main() {
     self->_lf__modes[0].deactivation_time = 0;
     #line 56 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__modes[0].flags = 0;
-    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 129 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__modes[1].state = &_lf_self_base->_lf__mode_state;
-    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
-    self->_lf__modes[1].name = "TURN_RIGHT";
-    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 129 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    self->_lf__modes[1].name = "TURN_CORNER";
+    #line 129 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__modes[1].deactivation_time = 0;
-    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 129 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__modes[1].flags = 0;
     // Initialize mode state
     _lf_self_base->_lf__mode_state.parent_mode = NULL;
