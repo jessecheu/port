@@ -6,9 +6,14 @@
 #include "_gyroangle.h"
 #include "_line.h"
 #include "_motors.h"
-#ifndef TOP_LEVEL_PREAMBLE_1583867077_H
-#define TOP_LEVEL_PREAMBLE_1583867077_H
+#ifndef TOP_LEVEL_PREAMBLE_1102097996_H
+#define TOP_LEVEL_PREAMBLE_1102097996_H
 #include <ir_sensors.h>
+#include <motors.h>
+#include <pico/stdlib.h>
+#include <display.h>        // Do not use "display.h". Doesn't work.
+#include <pico/stdlib.h>
+#include <imu.h>
 #include <math.h> 
 #include <hardware/pio.h>
 #include <quadrature_encoder.pio.h>
@@ -18,11 +23,6 @@
 #define LEFT_ENCODER_AB 12
 #define RIGHT_SM 0
 #define LEFT_SM 1
-#include <pico/stdlib.h>
-#include <display.h>        // Do not use "display.h". Doesn't work.
-#include <motors.h>
-#include <pico/stdlib.h>
-#include <imu.h>
 #endif
 typedef struct {
     struct self_base_t base;
@@ -31,7 +31,7 @@ typedef struct {
     #line 21 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     interval_t sample_period;
     #line 32 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
-    int count;
+    float angle_before_turn;
     #line 35 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     float distance;
     struct {
@@ -84,7 +84,7 @@ typedef struct {
     reaction_t _lf__reaction_2;
     #line 57 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     reaction_t _lf__reaction_3;
-    #line 128 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 132 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     reaction_t _lf__reaction_4;
     #line 29 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     trigger_t _lf__t;

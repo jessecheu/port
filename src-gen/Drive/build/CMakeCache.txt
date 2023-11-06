@@ -261,7 +261,7 @@ LF_FILE_SEPARATOR:UNINITIALIZED="/"
 LF_PACKAGE_DIRECTORY:UNINITIALIZED="/home/dobbs/ucb_related/fall2023/eecs149/port"
 
 //No help, variable specified on the command line.
-LF_REACTION_GRAPH_BREADTH:UNINITIALIZED=3
+LF_REACTION_GRAPH_BREADTH:UNINITIALIZED=5
 
 //No help, variable specified on the command line.
 LF_SOURCE_DIRECTORY:UNINITIALIZED="/home/dobbs/ucb_related/fall2023/eecs149/port/src"

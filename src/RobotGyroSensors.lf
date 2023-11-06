@@ -1,0 +1,67 @@
+/**
+ * Line detection on Pololu 3pi+ 2040 Robot using a taped black line on the ground
+ * Tests the five line sensors on the robot.
+ *
+ */
+ target C {
+    platform: {
+      name: "rp2040",
+      board: "pololu_3pi_2040_robot"
+    },
+    threading: false,
+  }
+  
+  import Display from "lib/Display.lf"
+  import GyroAngle from "lib/IMU.lf"
+  import Encoders from "lib/Encoders.lf"
+  
+  main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
+    disp = new Display()
+    gyro = new GyroAngle();
+  
+    timer t(0, sample_period)
+    // Timer used to display seconds.
+    timer seconds(0, 1 s)
+  
+
+  
+    // reaction(seconds) -> disp.line3 {=
+    //   static char buf[17];
+    //   snprintf(buf, 17, "time:%8d s", self->count++);
+    //   lf_set(disp.line3, buf);
+    // =}
+
+  
+    reaction(t) -> gyro.trigger {=
+      lf_set(gyro.trigger, true);
+    =}
+  
+    reaction(gyro.x, gyro.y, gyro.z) -> disp.line0, disp.line1, disp.line2, disp.line3 {=
+      static char buf0[17];
+      static char buf1[17];
+      static char buf2[17];
+      static char buf3[17];
+      // if (line.reflect->value[0] >= 1000 || line.reflect->value[1] >= 1000) {
+      //   snprintf(buf0, 17, "Left [0]=%d", line.reflect->value[0]);
+      // } else {
+      //   snprintf(buf0, 17, "[0]=%d", line.reflect->value[0]);
+      // }
+      // if (line.reflect->value[2] >= 1000) {
+      //   snprintf(buf1, 17, "Center [2]=%d", line.reflect->value[2]);
+      // } else { 
+      //   snprintf(buf1, 17, "[2]=%d", line.reflect->value[2]);
+      // }
+      // if (line.reflect->value[3] >= 1000 || line.reflect->value[4] >= 1000) {
+      //   snprintf(buf2, 17, "Right [4]=%d", line.reflect->value[4]);
+      // } else { 
+      //   snprintf(buf2, 17, "[4]=%d", line.reflect->value[3], line.reflect->value[4]);
+      // }
+      snprintf(buf0, 17, "[x]=%.1f", gyro.x->value);
+      snprintf(buf1, 17, "[y]=%.1f", gyro.y->value);
+      snprintf(buf2, 17, "[z]=%.1f", gyro.z->value);
+      lf_set(disp.line0, buf0);
+      lf_set(disp.line1, buf1);
+      lf_set(disp.line2, buf2);
+    =}
+  }
+  

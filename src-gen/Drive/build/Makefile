@@ -376,6 +376,78 @@ _drive_main.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Drive.dir/build.make CMakeFiles/Drive.dir/_drive_main.c.s
 .PHONY : _drive_main.c.s
 
+_encoders.obj: _encoders.c.obj
+.PHONY : _encoders.obj
+
+# target to build an object file
+_encoders.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Drive.dir/build.make CMakeFiles/Drive.dir/_encoders.c.obj
+.PHONY : _encoders.c.obj
+
+_encoders.i: _encoders.c.i
+.PHONY : _encoders.i
+
+# target to preprocess a source file
+_encoders.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Drive.dir/build.make CMakeFiles/Drive.dir/_encoders.c.i
+.PHONY : _encoders.c.i
+
+_encoders.s: _encoders.c.s
+.PHONY : _encoders.s
+
+# target to generate assembly for a file
+_encoders.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Drive.dir/build.make CMakeFiles/Drive.dir/_encoders.c.s
+.PHONY : _encoders.c.s
+
+_gyro.obj: _gyro.c.obj
+.PHONY : _gyro.obj
+
+# target to build an object file
+_gyro.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Drive.dir/build.make CMakeFiles/Drive.dir/_gyro.c.obj
+.PHONY : _gyro.c.obj
+
+_gyro.i: _gyro.c.i
+.PHONY : _gyro.i
+
+# target to preprocess a source file
+_gyro.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Drive.dir/build.make CMakeFiles/Drive.dir/_gyro.c.i
+.PHONY : _gyro.c.i
+
+_gyro.s: _gyro.c.s
+.PHONY : _gyro.s
+
+# target to generate assembly for a file
+_gyro.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Drive.dir/build.make CMakeFiles/Drive.dir/_gyro.c.s
+.PHONY : _gyro.c.s
+
+_gyroangle.obj: _gyroangle.c.obj
+.PHONY : _gyroangle.obj
+
+# target to build an object file
+_gyroangle.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Drive.dir/build.make CMakeFiles/Drive.dir/_gyroangle.c.obj
+.PHONY : _gyroangle.c.obj
+
+_gyroangle.i: _gyroangle.c.i
+.PHONY : _gyroangle.i
+
+# target to preprocess a source file
+_gyroangle.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Drive.dir/build.make CMakeFiles/Drive.dir/_gyroangle.c.i
+.PHONY : _gyroangle.c.i
+
+_gyroangle.s: _gyroangle.c.s
+.PHONY : _gyroangle.s
+
+# target to generate assembly for a file
+_gyroangle.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Drive.dir/build.make CMakeFiles/Drive.dir/_gyroangle.c.s
+.PHONY : _gyroangle.c.s
+
 _line.obj: _line.c.obj
 .PHONY : _line.obj
 
@@ -423,6 +495,30 @@ _motors.s: _motors.c.s
 _motors.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Drive.dir/build.make CMakeFiles/Drive.dir/_motors.c.s
 .PHONY : _motors.c.s
+
+_trapezoidalintegrator.obj: _trapezoidalintegrator.c.obj
+.PHONY : _trapezoidalintegrator.obj
+
+# target to build an object file
+_trapezoidalintegrator.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Drive.dir/build.make CMakeFiles/Drive.dir/_trapezoidalintegrator.c.obj
+.PHONY : _trapezoidalintegrator.c.obj
+
+_trapezoidalintegrator.i: _trapezoidalintegrator.c.i
+.PHONY : _trapezoidalintegrator.i
+
+# target to preprocess a source file
+_trapezoidalintegrator.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Drive.dir/build.make CMakeFiles/Drive.dir/_trapezoidalintegrator.c.i
+.PHONY : _trapezoidalintegrator.c.i
+
+_trapezoidalintegrator.s: _trapezoidalintegrator.c.s
+.PHONY : _trapezoidalintegrator.s
+
+# target to generate assembly for a file
+_trapezoidalintegrator.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Drive.dir/build.make CMakeFiles/Drive.dir/_trapezoidalintegrator.c.s
+.PHONY : _trapezoidalintegrator.c.s
 
 home/dobbs/Documents/development/pico/pico-sdk/lib/tinyusb/src/class/audio/audio_device.obj: home/dobbs/Documents/development/pico/pico-sdk/lib/tinyusb/src/class/audio/audio_device.c.obj
 .PHONY : home/dobbs/Documents/development/pico/pico-sdk/lib/tinyusb/src/class/audio/audio_device.obj
@@ -2080,12 +2176,24 @@ help:
 	@echo "... _drive_main.obj"
 	@echo "... _drive_main.i"
 	@echo "... _drive_main.s"
+	@echo "... _encoders.obj"
+	@echo "... _encoders.i"
+	@echo "... _encoders.s"
+	@echo "... _gyro.obj"
+	@echo "... _gyro.i"
+	@echo "... _gyro.s"
+	@echo "... _gyroangle.obj"
+	@echo "... _gyroangle.i"
+	@echo "... _gyroangle.s"
 	@echo "... _line.obj"
 	@echo "... _line.i"
 	@echo "... _line.s"
 	@echo "... _motors.obj"
 	@echo "... _motors.i"
 	@echo "... _motors.s"
+	@echo "... _trapezoidalintegrator.obj"
+	@echo "... _trapezoidalintegrator.i"
+	@echo "... _trapezoidalintegrator.s"
 	@echo "... home/dobbs/Documents/development/pico/pico-sdk/lib/tinyusb/src/class/audio/audio_device.obj"
 	@echo "... home/dobbs/Documents/development/pico/pico-sdk/lib/tinyusb/src/class/audio/audio_device.i"
 	@echo "... home/dobbs/Documents/development/pico/pico-sdk/lib/tinyusb/src/class/audio/audio_device.s"
