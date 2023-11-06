@@ -54,6 +54,10 @@ add_executable(
     _line.c
     _display.c
     _motors.c
+    _gyroangle.c
+    _gyro.c
+    _trapezoidalintegrator.c
+    _encoders.c
     Drive.c
 )
 
