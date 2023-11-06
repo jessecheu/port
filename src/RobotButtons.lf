@@ -1,5 +1,6 @@
 /**
  * Testing the Buttons on Pololu 3pi+ 2040 Robot 
+ * Code adapted from https://github.com/pololu/pololu-3pi-2040-robot/tree/master/c/pololu_3pi_2040_robot 
  */
  target C {
     platform: {
@@ -7,22 +8,23 @@
       board: "pololu_3pi_2040_robot"
     },
     threading: false,
+    files: ["../robot-lib/"],                      // Needed to find button.h
+    cmake-include: ["../robot-lib/robot-lib.txt"]  // Needed to find button.h
   }
 
   preamble {=
     #include <string.h>
     #include <stdio.h>
-    #include <pico/stdlib.h>
+    #include <button.h>
     #include <pololu_3pi_2040_robot.h>
   =}
   
-  main reactor {
-    timer t(0, 100ms); 
+  reactor Buttons {
+    timer t(0, 100ms);
 
-    //Buttons from the Pololu 3pi+ 2040 Robot
-
-    reaction(t) {=
-
+    reaction(t) {= 
+      button button_a;
     =}
+
   }
   
