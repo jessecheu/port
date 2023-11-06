@@ -19,6 +19,10 @@ void _lf_set_default_command_line_options() {}
 #include "_line.h"
 #include "_display.h"
 #include "_motors.h"
+#include "_gyro.h"
+#include "_trapezoidalintegrator.h"
+#include "_gyroangle.h"
+#include "_encoders.h"
 #include "_drive_main.h"
 typedef enum {
     drive_main,
@@ -28,7 +32,7 @@ typedef enum {
 environment_t envs[_num_enclaves];
 // 'Create' and initialize the environments in the program
 void _lf_create_environments() {
-    environment_init(&envs[drive_main],drive_main,_lf_number_of_workers,4,3,0,0,8,1,0,NULL);
+    environment_init(&envs[drive_main],drive_main,_lf_number_of_workers,4,5,0,0,18,1,0,NULL);
 }
 // Update the pointer argument to point to the beginning of the environment array
 // and return the size of that array
@@ -59,6 +63,18 @@ void _lf_initialize_trigger_objects() {
     SUPPRESS_UNUSED_WARNING(drive_disp_self);
     _motors_self_t* drive_motor_self[1];
     SUPPRESS_UNUSED_WARNING(drive_motor_self);
+    _gyroangle_self_t* drive_gyro_self[1];
+    SUPPRESS_UNUSED_WARNING(drive_gyro_self);
+    _gyro_self_t* drive_gyro_g_self[1];
+    SUPPRESS_UNUSED_WARNING(drive_gyro_g_self);
+    _trapezoidalintegrator_self_t* drive_gyro_integrator1_self[1];
+    SUPPRESS_UNUSED_WARNING(drive_gyro_integrator1_self);
+    _trapezoidalintegrator_self_t* drive_gyro_integrator2_self[1];
+    SUPPRESS_UNUSED_WARNING(drive_gyro_integrator2_self);
+    _trapezoidalintegrator_self_t* drive_gyro_integrator3_self[1];
+    SUPPRESS_UNUSED_WARNING(drive_gyro_integrator3_self);
+    _encoders_self_t* drive_encoder_self[1];
+    SUPPRESS_UNUSED_WARNING(drive_encoder_self);
     // ***** Start initializing Drive of class Drive
     drive_main_self[0] = new__drive_main();
     drive_main_self[0]->base.environment = &envs[drive_main];
@@ -70,6 +86,10 @@ void _lf_initialize_trigger_objects() {
     { // For scoping
         static int _initial = 0;
         drive_main_self[0]->count = _initial;
+    } // End scoping.
+    { // For scoping
+        static float _initial = 0;
+        drive_main_self[0]->distance = _initial;
     } // End scoping.
     // Initiaizing timer Drive.t.
     drive_main_self[0]->_lf__t.offset = 0;
@@ -100,6 +120,7 @@ void _lf_initialize_trigger_objects() {
     drive_main_self[0]->_lf__reaction_1.deadline = NEVER;
     drive_main_self[0]->_lf__reaction_2.deadline = NEVER;
     drive_main_self[0]->_lf__reaction_3.deadline = NEVER;
+    drive_main_self[0]->_lf__reaction_4.deadline = NEVER;
     // Register for transition handling
     envs[drive_main].modes->modal_reactor_states[modal_reactor_count[drive_main]++] = &((self_base_t*)drive_main_self[0])->_lf__mode_state;
     {
@@ -163,6 +184,139 @@ void _lf_initialize_trigger_objects() {
         drive_motor_self[0]->_lf__reaction_1.deadline = NEVER;
         drive_motor_self[0]->_lf__reaction_2.deadline = NEVER;
         //***** End initializing Drive.motor
+    }
+    {
+        // ***** Start initializing Drive.gyro of class GyroAngle
+        drive_gyro_self[0] = new__gyroangle();
+        drive_gyro_self[0]->base.environment = &envs[drive_main];
+        bank_index = 0; SUPPRESS_UNUSED_WARNING(bank_index);
+        // width of -2 indicates that it is not a multiport.
+        drive_gyro_self[0]->_lf_x_width = -2;
+        // width of -2 indicates that it is not a multiport.
+        drive_gyro_self[0]->_lf_y_width = -2;
+        // width of -2 indicates that it is not a multiport.
+        drive_gyro_self[0]->_lf_z_width = -2;
+        // width of -2 indicates that it is not a multiport.
+        drive_gyro_self[0]->_lf_trigger_width = -2;
+        SUPPRESS_UNUSED_WARNING(_lf_watchdog_count);
+    
+        {
+            // ***** Start initializing Drive.gyro.g of class Gyro
+            drive_gyro_g_self[0] = new__gyro();
+            drive_gyro_g_self[0]->base.environment = &envs[drive_main];
+            bank_index = 0; SUPPRESS_UNUSED_WARNING(bank_index);
+            // width of -2 indicates that it is not a multiport.
+            drive_gyro_g_self[0]->_lf_x_width = -2;
+            // width of -2 indicates that it is not a multiport.
+            drive_gyro_g_self[0]->_lf_y_width = -2;
+            // width of -2 indicates that it is not a multiport.
+            drive_gyro_g_self[0]->_lf_z_width = -2;
+            // width of -2 indicates that it is not a multiport.
+            drive_gyro_g_self[0]->_lf_trigger_width = -2;
+            envs[drive_main].startup_reactions[startup_reaction_count[drive_main]++] = &drive_gyro_g_self[0]->_lf__reaction_0;
+            SUPPRESS_UNUSED_WARNING(_lf_watchdog_count);
+    
+            drive_gyro_g_self[0]->_lf__reaction_0.deadline = NEVER;
+            drive_gyro_g_self[0]->_lf__reaction_1.deadline = NEVER;
+            //***** End initializing Drive.gyro.g
+        }
+        {
+            // ***** Start initializing Drive.gyro.integrator1 of class TrapezoidalIntegrator
+            drive_gyro_integrator1_self[0] = new__trapezoidalintegrator();
+            drive_gyro_integrator1_self[0]->base.environment = &envs[drive_main];
+            bank_index = 0; SUPPRESS_UNUSED_WARNING(bank_index);
+            // width of -2 indicates that it is not a multiport.
+            drive_gyro_integrator1_self[0]->_lf_out_width = -2;
+            // width of -2 indicates that it is not a multiport.
+            drive_gyro_integrator1_self[0]->_lf_in_width = -2;
+            SUPPRESS_UNUSED_WARNING(_lf_watchdog_count);
+            { // For scoping
+                static float _initial = 0;
+                drive_gyro_integrator1_self[0]->s = _initial;
+            } // End scoping.
+            { // For scoping
+                static float _initial = 0;
+                drive_gyro_integrator1_self[0]->prev_in = _initial;
+            } // End scoping.
+            { // For scoping
+                static instant_t _initial = 0;
+                drive_gyro_integrator1_self[0]->prev_time = _initial;
+            } // End scoping.
+    
+            drive_gyro_integrator1_self[0]->_lf__reaction_0.deadline = NEVER;
+            //***** End initializing Drive.gyro.integrator1
+        }
+        {
+            // ***** Start initializing Drive.gyro.integrator2 of class TrapezoidalIntegrator
+            drive_gyro_integrator2_self[0] = new__trapezoidalintegrator();
+            drive_gyro_integrator2_self[0]->base.environment = &envs[drive_main];
+            bank_index = 0; SUPPRESS_UNUSED_WARNING(bank_index);
+            // width of -2 indicates that it is not a multiport.
+            drive_gyro_integrator2_self[0]->_lf_out_width = -2;
+            // width of -2 indicates that it is not a multiport.
+            drive_gyro_integrator2_self[0]->_lf_in_width = -2;
+            SUPPRESS_UNUSED_WARNING(_lf_watchdog_count);
+            { // For scoping
+                static float _initial = 0;
+                drive_gyro_integrator2_self[0]->s = _initial;
+            } // End scoping.
+            { // For scoping
+                static float _initial = 0;
+                drive_gyro_integrator2_self[0]->prev_in = _initial;
+            } // End scoping.
+            { // For scoping
+                static instant_t _initial = 0;
+                drive_gyro_integrator2_self[0]->prev_time = _initial;
+            } // End scoping.
+    
+            drive_gyro_integrator2_self[0]->_lf__reaction_0.deadline = NEVER;
+            //***** End initializing Drive.gyro.integrator2
+        }
+        {
+            // ***** Start initializing Drive.gyro.integrator3 of class TrapezoidalIntegrator
+            drive_gyro_integrator3_self[0] = new__trapezoidalintegrator();
+            drive_gyro_integrator3_self[0]->base.environment = &envs[drive_main];
+            bank_index = 0; SUPPRESS_UNUSED_WARNING(bank_index);
+            // width of -2 indicates that it is not a multiport.
+            drive_gyro_integrator3_self[0]->_lf_out_width = -2;
+            // width of -2 indicates that it is not a multiport.
+            drive_gyro_integrator3_self[0]->_lf_in_width = -2;
+            SUPPRESS_UNUSED_WARNING(_lf_watchdog_count);
+            { // For scoping
+                static float _initial = 0;
+                drive_gyro_integrator3_self[0]->s = _initial;
+            } // End scoping.
+            { // For scoping
+                static float _initial = 0;
+                drive_gyro_integrator3_self[0]->prev_in = _initial;
+            } // End scoping.
+            { // For scoping
+                static instant_t _initial = 0;
+                drive_gyro_integrator3_self[0]->prev_time = _initial;
+            } // End scoping.
+    
+            drive_gyro_integrator3_self[0]->_lf__reaction_0.deadline = NEVER;
+            //***** End initializing Drive.gyro.integrator3
+        }
+        //***** End initializing Drive.gyro
+    }
+    {
+        // ***** Start initializing Drive.encoder of class Encoders
+        drive_encoder_self[0] = new__encoders();
+        drive_encoder_self[0]->base.environment = &envs[drive_main];
+        bank_index = 0; SUPPRESS_UNUSED_WARNING(bank_index);
+        // width of -2 indicates that it is not a multiport.
+        drive_encoder_self[0]->_lf_right_width = -2;
+        // width of -2 indicates that it is not a multiport.
+        drive_encoder_self[0]->_lf_left_width = -2;
+        // width of -2 indicates that it is not a multiport.
+        drive_encoder_self[0]->_lf_trigger_width = -2;
+        envs[drive_main].startup_reactions[startup_reaction_count[drive_main]++] = &drive_encoder_self[0]->_lf__reaction_0;
+        SUPPRESS_UNUSED_WARNING(_lf_watchdog_count);
+    
+        drive_encoder_self[0]->_lf__reaction_0.deadline = NEVER;
+        drive_encoder_self[0]->_lf__reaction_1.deadline = NEVER;
+        //***** End initializing Drive.encoder
     }
     //***** End initializing Drive
     // **** Start deferred initialize for Drive
@@ -232,17 +386,17 @@ void _lf_initialize_trigger_objects() {
         // ** End initialization for reaction 1 of Drive
         // Total number of outputs (single ports and multiport channels)
         // produced by reaction_2 of Drive.
-        drive_main_self[0]->_lf__reaction_2.num_outputs = 1;
+        drive_main_self[0]->_lf__reaction_2.num_outputs = 2;
         // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
         // struct for this reaction.
         drive_main_self[0]->_lf__reaction_2.triggers = (trigger_t***)_lf_allocate(
-                1, sizeof(trigger_t**),
+                2, sizeof(trigger_t**),
                 &drive_main_self[0]->base.allocations);
         drive_main_self[0]->_lf__reaction_2.triggered_sizes = (int*)_lf_allocate(
-                1, sizeof(int),
+                2, sizeof(int),
                 &drive_main_self[0]->base.allocations);
         drive_main_self[0]->_lf__reaction_2.output_produced = (bool**)_lf_allocate(
-                1, sizeof(bool*),
+                2, sizeof(bool*),
                 &drive_main_self[0]->base.allocations);
         {
             int count = 0; SUPPRESS_UNUSED_WARNING(count);
@@ -250,22 +404,26 @@ void _lf_initialize_trigger_objects() {
             {
                 drive_main_self[0]->_lf__reaction_2.output_produced[count++] = &drive_main_self[0]->_lf_line.trigger.is_present;
             }
+            // Reaction writes to an input of a contained reactor.
+            {
+                drive_main_self[0]->_lf__reaction_2.output_produced[count++] = &drive_main_self[0]->_lf_gyro.trigger.is_present;
+            }
         }
         
         // ** End initialization for reaction 2 of Drive
         // Total number of outputs (single ports and multiport channels)
         // produced by reaction_3 of Drive.
-        drive_main_self[0]->_lf__reaction_3.num_outputs = 5;
+        drive_main_self[0]->_lf__reaction_3.num_outputs = 6;
         // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
         // struct for this reaction.
         drive_main_self[0]->_lf__reaction_3.triggers = (trigger_t***)_lf_allocate(
-                5, sizeof(trigger_t**),
+                6, sizeof(trigger_t**),
                 &drive_main_self[0]->base.allocations);
         drive_main_self[0]->_lf__reaction_3.triggered_sizes = (int*)_lf_allocate(
-                5, sizeof(int),
+                6, sizeof(int),
                 &drive_main_self[0]->base.allocations);
         drive_main_self[0]->_lf__reaction_3.output_produced = (bool**)_lf_allocate(
-                5, sizeof(bool*),
+                6, sizeof(bool*),
                 &drive_main_self[0]->base.allocations);
         {
             int count = 0; SUPPRESS_UNUSED_WARNING(count);
@@ -289,9 +447,40 @@ void _lf_initialize_trigger_objects() {
             {
                 drive_main_self[0]->_lf__reaction_3.output_produced[count++] = &drive_main_self[0]->_lf_disp.line2.is_present;
             }
+            // Reaction writes to an input of a contained reactor.
+            {
+                drive_main_self[0]->_lf__reaction_3.output_produced[count++] = &drive_main_self[0]->_lf_disp.line3.is_present;
+            }
         }
         
         // ** End initialization for reaction 3 of Drive
+        // Total number of outputs (single ports and multiport channels)
+        // produced by reaction_4 of Drive.
+        drive_main_self[0]->_lf__reaction_4.num_outputs = 2;
+        // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
+        // struct for this reaction.
+        drive_main_self[0]->_lf__reaction_4.triggers = (trigger_t***)_lf_allocate(
+                2, sizeof(trigger_t**),
+                &drive_main_self[0]->base.allocations);
+        drive_main_self[0]->_lf__reaction_4.triggered_sizes = (int*)_lf_allocate(
+                2, sizeof(int),
+                &drive_main_self[0]->base.allocations);
+        drive_main_self[0]->_lf__reaction_4.output_produced = (bool**)_lf_allocate(
+                2, sizeof(bool*),
+                &drive_main_self[0]->base.allocations);
+        {
+            int count = 0; SUPPRESS_UNUSED_WARNING(count);
+            // Reaction writes to an input of a contained reactor.
+            {
+                drive_main_self[0]->_lf__reaction_4.output_produced[count++] = &drive_main_self[0]->_lf_motor.left_power.is_present;
+            }
+            // Reaction writes to an input of a contained reactor.
+            {
+                drive_main_self[0]->_lf__reaction_4.output_produced[count++] = &drive_main_self[0]->_lf_motor.right_power.is_present;
+            }
+        }
+        
+        // ** End initialization for reaction 4 of Drive
     
         // **** Start deferred initialize for Drive.line
         {
@@ -381,6 +570,178 @@ void _lf_initialize_trigger_objects() {
         
         }
         // **** End of deferred initialize for Drive.motor
+        // **** Start deferred initialize for Drive.gyro
+        {
+        
+        
+        
+            // **** Start deferred initialize for Drive.gyro.g
+            {
+            
+                // Total number of outputs (single ports and multiport channels)
+                // produced by reaction_0 of Drive.gyro.g.
+                drive_gyro_g_self[0]->_lf__reaction_0.num_outputs = 0;
+                {
+                    int count = 0; SUPPRESS_UNUSED_WARNING(count);
+                }
+                
+                // ** End initialization for reaction 0 of Drive.gyro.g
+                // Total number of outputs (single ports and multiport channels)
+                // produced by reaction_1 of Drive.gyro.g.
+                drive_gyro_g_self[0]->_lf__reaction_1.num_outputs = 3;
+                // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
+                // struct for this reaction.
+                drive_gyro_g_self[0]->_lf__reaction_1.triggers = (trigger_t***)_lf_allocate(
+                        3, sizeof(trigger_t**),
+                        &drive_gyro_g_self[0]->base.allocations);
+                drive_gyro_g_self[0]->_lf__reaction_1.triggered_sizes = (int*)_lf_allocate(
+                        3, sizeof(int),
+                        &drive_gyro_g_self[0]->base.allocations);
+                drive_gyro_g_self[0]->_lf__reaction_1.output_produced = (bool**)_lf_allocate(
+                        3, sizeof(bool*),
+                        &drive_gyro_g_self[0]->base.allocations);
+                {
+                    int count = 0; SUPPRESS_UNUSED_WARNING(count);
+                    {
+                        drive_gyro_g_self[0]->_lf__reaction_1.output_produced[count++] = &drive_gyro_g_self[0]->_lf_x.is_present;
+                    }
+                    {
+                        drive_gyro_g_self[0]->_lf__reaction_1.output_produced[count++] = &drive_gyro_g_self[0]->_lf_y.is_present;
+                    }
+                    {
+                        drive_gyro_g_self[0]->_lf__reaction_1.output_produced[count++] = &drive_gyro_g_self[0]->_lf_z.is_present;
+                    }
+                }
+                
+                // ** End initialization for reaction 1 of Drive.gyro.g
+            
+            }
+            // **** End of deferred initialize for Drive.gyro.g
+            // **** Start deferred initialize for Drive.gyro.integrator1
+            {
+            
+                // Total number of outputs (single ports and multiport channels)
+                // produced by reaction_0 of Drive.gyro.integrator1.
+                drive_gyro_integrator1_self[0]->_lf__reaction_0.num_outputs = 1;
+                // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
+                // struct for this reaction.
+                drive_gyro_integrator1_self[0]->_lf__reaction_0.triggers = (trigger_t***)_lf_allocate(
+                        1, sizeof(trigger_t**),
+                        &drive_gyro_integrator1_self[0]->base.allocations);
+                drive_gyro_integrator1_self[0]->_lf__reaction_0.triggered_sizes = (int*)_lf_allocate(
+                        1, sizeof(int),
+                        &drive_gyro_integrator1_self[0]->base.allocations);
+                drive_gyro_integrator1_self[0]->_lf__reaction_0.output_produced = (bool**)_lf_allocate(
+                        1, sizeof(bool*),
+                        &drive_gyro_integrator1_self[0]->base.allocations);
+                {
+                    int count = 0; SUPPRESS_UNUSED_WARNING(count);
+                    {
+                        drive_gyro_integrator1_self[0]->_lf__reaction_0.output_produced[count++] = &drive_gyro_integrator1_self[0]->_lf_out.is_present;
+                    }
+                }
+                
+                // ** End initialization for reaction 0 of Drive.gyro.integrator1
+            
+            }
+            // **** End of deferred initialize for Drive.gyro.integrator1
+            // **** Start deferred initialize for Drive.gyro.integrator2
+            {
+            
+                // Total number of outputs (single ports and multiport channels)
+                // produced by reaction_0 of Drive.gyro.integrator2.
+                drive_gyro_integrator2_self[0]->_lf__reaction_0.num_outputs = 1;
+                // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
+                // struct for this reaction.
+                drive_gyro_integrator2_self[0]->_lf__reaction_0.triggers = (trigger_t***)_lf_allocate(
+                        1, sizeof(trigger_t**),
+                        &drive_gyro_integrator2_self[0]->base.allocations);
+                drive_gyro_integrator2_self[0]->_lf__reaction_0.triggered_sizes = (int*)_lf_allocate(
+                        1, sizeof(int),
+                        &drive_gyro_integrator2_self[0]->base.allocations);
+                drive_gyro_integrator2_self[0]->_lf__reaction_0.output_produced = (bool**)_lf_allocate(
+                        1, sizeof(bool*),
+                        &drive_gyro_integrator2_self[0]->base.allocations);
+                {
+                    int count = 0; SUPPRESS_UNUSED_WARNING(count);
+                    {
+                        drive_gyro_integrator2_self[0]->_lf__reaction_0.output_produced[count++] = &drive_gyro_integrator2_self[0]->_lf_out.is_present;
+                    }
+                }
+                
+                // ** End initialization for reaction 0 of Drive.gyro.integrator2
+            
+            }
+            // **** End of deferred initialize for Drive.gyro.integrator2
+            // **** Start deferred initialize for Drive.gyro.integrator3
+            {
+            
+                // Total number of outputs (single ports and multiport channels)
+                // produced by reaction_0 of Drive.gyro.integrator3.
+                drive_gyro_integrator3_self[0]->_lf__reaction_0.num_outputs = 1;
+                // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
+                // struct for this reaction.
+                drive_gyro_integrator3_self[0]->_lf__reaction_0.triggers = (trigger_t***)_lf_allocate(
+                        1, sizeof(trigger_t**),
+                        &drive_gyro_integrator3_self[0]->base.allocations);
+                drive_gyro_integrator3_self[0]->_lf__reaction_0.triggered_sizes = (int*)_lf_allocate(
+                        1, sizeof(int),
+                        &drive_gyro_integrator3_self[0]->base.allocations);
+                drive_gyro_integrator3_self[0]->_lf__reaction_0.output_produced = (bool**)_lf_allocate(
+                        1, sizeof(bool*),
+                        &drive_gyro_integrator3_self[0]->base.allocations);
+                {
+                    int count = 0; SUPPRESS_UNUSED_WARNING(count);
+                    {
+                        drive_gyro_integrator3_self[0]->_lf__reaction_0.output_produced[count++] = &drive_gyro_integrator3_self[0]->_lf_out.is_present;
+                    }
+                }
+                
+                // ** End initialization for reaction 0 of Drive.gyro.integrator3
+            
+            }
+            // **** End of deferred initialize for Drive.gyro.integrator3
+        }
+        // **** End of deferred initialize for Drive.gyro
+        // **** Start deferred initialize for Drive.encoder
+        {
+        
+            // Total number of outputs (single ports and multiport channels)
+            // produced by reaction_0 of Drive.encoder.
+            drive_encoder_self[0]->_lf__reaction_0.num_outputs = 0;
+            {
+                int count = 0; SUPPRESS_UNUSED_WARNING(count);
+            }
+            
+            // ** End initialization for reaction 0 of Drive.encoder
+            // Total number of outputs (single ports and multiport channels)
+            // produced by reaction_1 of Drive.encoder.
+            drive_encoder_self[0]->_lf__reaction_1.num_outputs = 2;
+            // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
+            // struct for this reaction.
+            drive_encoder_self[0]->_lf__reaction_1.triggers = (trigger_t***)_lf_allocate(
+                    2, sizeof(trigger_t**),
+                    &drive_encoder_self[0]->base.allocations);
+            drive_encoder_self[0]->_lf__reaction_1.triggered_sizes = (int*)_lf_allocate(
+                    2, sizeof(int),
+                    &drive_encoder_self[0]->base.allocations);
+            drive_encoder_self[0]->_lf__reaction_1.output_produced = (bool**)_lf_allocate(
+                    2, sizeof(bool*),
+                    &drive_encoder_self[0]->base.allocations);
+            {
+                int count = 0; SUPPRESS_UNUSED_WARNING(count);
+                {
+                    drive_encoder_self[0]->_lf__reaction_1.output_produced[count++] = &drive_encoder_self[0]->_lf_left.is_present;
+                }
+                {
+                    drive_encoder_self[0]->_lf__reaction_1.output_produced[count++] = &drive_encoder_self[0]->_lf_right.is_present;
+                }
+            }
+            
+            // ** End initialization for reaction 1 of Drive.encoder
+        
+        }
+        // **** End of deferred initialize for Drive.encoder
     }
     // **** End of deferred initialize for Drive
     // **** Start non-nested deferred initialize for Drive
@@ -454,6 +815,26 @@ void _lf_initialize_trigger_objects() {
             int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
             drive_main_self[src_runtime]->_lf_line.trigger._base.num_destinations = 1;
             drive_main_self[src_runtime]->_lf_line.trigger._base.source_reactor = (self_base_t*)drive_main_self[src_runtime];
+        }
+        // Set number of destination reactors for port gyro.trigger.
+        // Iterate over range Drive.gyro.trigger(0,1)->[Drive.gyro.g.trigger(0,1)].
+        {
+            int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+            int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+            int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+            drive_main_self[src_runtime]->_lf_gyro.trigger._base.num_destinations = 1;
+            drive_main_self[src_runtime]->_lf_gyro.trigger._base.source_reactor = (self_base_t*)drive_main_self[src_runtime];
+        }
+        // Set number of destination reactors for port disp.line3.
+        // Iterate over range Drive.disp.line3(0,1)->[Drive.disp.line3(0,1)].
+        {
+            int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+            int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+            int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+            drive_main_self[src_runtime]->_lf_disp.line3._base.num_destinations = 1;
+            drive_main_self[src_runtime]->_lf_disp.line3._base.source_reactor = (self_base_t*)drive_main_self[src_runtime];
         }
         {
             int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
@@ -689,6 +1070,22 @@ void _lf_initialize_trigger_objects() {
                         &drive_main_self[src_runtime]->base.allocations); 
                 drive_main_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime]++] = trigger_array;
             }
+            // Iterate over range Drive.gyro.trigger(0,1)->[Drive.gyro.g.trigger(0,1)].
+            {
+                int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                // Reaction 2 of Drive triggers 1 downstream reactions
+                // through port Drive.gyro.trigger.
+                drive_main_self[src_runtime]->_lf__reaction_2.triggered_sizes[triggers_index[src_runtime]] = 1;
+                // For reaction 2 of Drive, allocate an
+                // array of trigger pointers for downstream reactions through port Drive.gyro.trigger
+                trigger_t** trigger_array = (trigger_t**)_lf_allocate(
+                        1, sizeof(trigger_t*),
+                        &drive_main_self[src_runtime]->base.allocations); 
+                drive_main_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime]++] = trigger_array;
+            }
             for (int i = 0; i < 1; i++) triggers_index[i] = 0;
             // Iterate over ranges Drive.line.trigger(0,1)->[Drive.line.trigger(0,1)] and Drive.line.trigger(0,1).
             {
@@ -706,6 +1103,25 @@ void _lf_initialize_trigger_objects() {
                     int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
                     // Point to destination port Drive.line.trigger's trigger struct.
                     drive_main_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime] + src_channel][0] = &drive_line_self[dst_runtime]->_lf__trigger;
+                }
+            }
+            for (int i = 0; i < 1; i++) triggers_index[i] = 1;
+            // Iterate over ranges Drive.gyro.trigger(0,1)->[Drive.gyro.g.trigger(0,1)] and Drive.gyro.g.trigger(0,1).
+            {
+                int src_runtime = 0; // Runtime index.
+                SUPPRESS_UNUSED_WARNING(src_runtime);
+                int src_channel = 0; // Channel index.
+                SUPPRESS_UNUSED_WARNING(src_channel);
+                int src_bank = 0; // Bank index.
+                SUPPRESS_UNUSED_WARNING(src_bank);
+                // Iterate over range Drive.gyro.g.trigger(0,1).
+                {
+                    int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                    int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                    int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Point to destination port Drive.gyro.g.trigger's trigger struct.
+                    drive_main_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime] + src_channel][0] = &drive_gyro_g_self[dst_runtime]->_lf__trigger;
                 }
             }
         }
@@ -786,6 +1202,22 @@ void _lf_initialize_trigger_objects() {
                 drive_main_self[src_runtime]->_lf__reaction_3.triggered_sizes[triggers_index[src_runtime]] = 1;
                 // For reaction 3 of Drive, allocate an
                 // array of trigger pointers for downstream reactions through port Drive.disp.line2
+                trigger_t** trigger_array = (trigger_t**)_lf_allocate(
+                        1, sizeof(trigger_t*),
+                        &drive_main_self[src_runtime]->base.allocations); 
+                drive_main_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime]++] = trigger_array;
+            }
+            // Iterate over range Drive.disp.line3(0,1)->[Drive.disp.line3(0,1)].
+            {
+                int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                // Reaction 3 of Drive triggers 1 downstream reactions
+                // through port Drive.disp.line3.
+                drive_main_self[src_runtime]->_lf__reaction_3.triggered_sizes[triggers_index[src_runtime]] = 1;
+                // For reaction 3 of Drive, allocate an
+                // array of trigger pointers for downstream reactions through port Drive.disp.line3
                 trigger_t** trigger_array = (trigger_t**)_lf_allocate(
                         1, sizeof(trigger_t*),
                         &drive_main_self[src_runtime]->base.allocations); 
@@ -886,6 +1318,98 @@ void _lf_initialize_trigger_objects() {
                     drive_main_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime] + src_channel][0] = &drive_disp_self[dst_runtime]->_lf__line2;
                 }
             }
+            for (int i = 0; i < 1; i++) triggers_index[i] = 5;
+            // Iterate over ranges Drive.disp.line3(0,1)->[Drive.disp.line3(0,1)] and Drive.disp.line3(0,1).
+            {
+                int src_runtime = 0; // Runtime index.
+                SUPPRESS_UNUSED_WARNING(src_runtime);
+                int src_channel = 0; // Channel index.
+                SUPPRESS_UNUSED_WARNING(src_channel);
+                int src_bank = 0; // Bank index.
+                SUPPRESS_UNUSED_WARNING(src_bank);
+                // Iterate over range Drive.disp.line3(0,1).
+                {
+                    int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                    int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                    int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Point to destination port Drive.disp.line3's trigger struct.
+                    drive_main_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime] + src_channel][0] = &drive_disp_self[dst_runtime]->_lf__line3;
+                }
+            }
+        }
+        {
+            int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
+            // Iterate over range Drive.motor.left_power(0,1)->[Drive.motor.left_power(0,1)].
+            {
+                int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                // Reaction 4 of Drive triggers 1 downstream reactions
+                // through port Drive.motor.left_power.
+                drive_main_self[src_runtime]->_lf__reaction_4.triggered_sizes[triggers_index[src_runtime]] = 1;
+                // For reaction 4 of Drive, allocate an
+                // array of trigger pointers for downstream reactions through port Drive.motor.left_power
+                trigger_t** trigger_array = (trigger_t**)_lf_allocate(
+                        1, sizeof(trigger_t*),
+                        &drive_main_self[src_runtime]->base.allocations); 
+                drive_main_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime]++] = trigger_array;
+            }
+            // Iterate over range Drive.motor.right_power(0,1)->[Drive.motor.right_power(0,1)].
+            {
+                int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                // Reaction 4 of Drive triggers 1 downstream reactions
+                // through port Drive.motor.right_power.
+                drive_main_self[src_runtime]->_lf__reaction_4.triggered_sizes[triggers_index[src_runtime]] = 1;
+                // For reaction 4 of Drive, allocate an
+                // array of trigger pointers for downstream reactions through port Drive.motor.right_power
+                trigger_t** trigger_array = (trigger_t**)_lf_allocate(
+                        1, sizeof(trigger_t*),
+                        &drive_main_self[src_runtime]->base.allocations); 
+                drive_main_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime]++] = trigger_array;
+            }
+            for (int i = 0; i < 1; i++) triggers_index[i] = 0;
+            // Iterate over ranges Drive.motor.left_power(0,1)->[Drive.motor.left_power(0,1)] and Drive.motor.left_power(0,1).
+            {
+                int src_runtime = 0; // Runtime index.
+                SUPPRESS_UNUSED_WARNING(src_runtime);
+                int src_channel = 0; // Channel index.
+                SUPPRESS_UNUSED_WARNING(src_channel);
+                int src_bank = 0; // Bank index.
+                SUPPRESS_UNUSED_WARNING(src_bank);
+                // Iterate over range Drive.motor.left_power(0,1).
+                {
+                    int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                    int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                    int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Point to destination port Drive.motor.left_power's trigger struct.
+                    drive_main_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime] + src_channel][0] = &drive_motor_self[dst_runtime]->_lf__left_power;
+                }
+            }
+            for (int i = 0; i < 1; i++) triggers_index[i] = 1;
+            // Iterate over ranges Drive.motor.right_power(0,1)->[Drive.motor.right_power(0,1)] and Drive.motor.right_power(0,1).
+            {
+                int src_runtime = 0; // Runtime index.
+                SUPPRESS_UNUSED_WARNING(src_runtime);
+                int src_channel = 0; // Channel index.
+                SUPPRESS_UNUSED_WARNING(src_channel);
+                int src_bank = 0; // Bank index.
+                SUPPRESS_UNUSED_WARNING(src_bank);
+                // Iterate over range Drive.motor.right_power(0,1).
+                {
+                    int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                    int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                    int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Point to destination port Drive.motor.right_power's trigger struct.
+                    drive_main_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime] + src_channel][0] = &drive_motor_self[dst_runtime]->_lf__right_power;
+                }
+            }
         }
     
         // **** Start non-nested deferred initialize for Drive.line
@@ -959,6 +1483,255 @@ void _lf_initialize_trigger_objects() {
         
         }
         // **** End of non-nested deferred initialize for Drive.motor
+        // **** Start non-nested deferred initialize for Drive.gyro
+        {
+        
+            for (int index486184027c8990b = 0; index486184027c8990b < 1; index486184027c8990b++) { drive_gyro_self[0]->_lf_x._base.source_reactor = (self_base_t*)drive_gyro_self[0]; }
+            for (int index486184027c8990b = 0; index486184027c8990b < 1; index486184027c8990b++) { drive_gyro_self[0]->_lf_y._base.source_reactor = (self_base_t*)drive_gyro_self[0]; }
+            // For reference counting, set num_destinations for port Drive.gyro.z.
+            // Iterate over range Drive.gyro.z(0,1)->[Drive.gyro.z(0,1)].
+            {
+                int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                drive_gyro_self[src_runtime]->_lf_z._base.num_destinations = 1;
+                drive_gyro_self[src_runtime]->_lf_z._base.source_reactor = (self_base_t*)drive_gyro_self[src_runtime];
+            }
+        
+        
+            // **** Start non-nested deferred initialize for Drive.gyro.g
+            {
+            
+                // For reference counting, set num_destinations for port Drive.gyro.g.x.
+                // Iterate over range Drive.gyro.g.x(0,1)->[Drive.gyro.integrator1.in(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    drive_gyro_g_self[src_runtime]->_lf_x._base.num_destinations = 1;
+                    drive_gyro_g_self[src_runtime]->_lf_x._base.source_reactor = (self_base_t*)drive_gyro_g_self[src_runtime];
+                }
+                // For reference counting, set num_destinations for port Drive.gyro.g.y.
+                // Iterate over range Drive.gyro.g.y(0,1)->[Drive.gyro.integrator2.in(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    drive_gyro_g_self[src_runtime]->_lf_y._base.num_destinations = 1;
+                    drive_gyro_g_self[src_runtime]->_lf_y._base.source_reactor = (self_base_t*)drive_gyro_g_self[src_runtime];
+                }
+                // For reference counting, set num_destinations for port Drive.gyro.g.z.
+                // Iterate over range Drive.gyro.g.z(0,1)->[Drive.gyro.integrator3.in(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    drive_gyro_g_self[src_runtime]->_lf_z._base.num_destinations = 1;
+                    drive_gyro_g_self[src_runtime]->_lf_z._base.source_reactor = (self_base_t*)drive_gyro_g_self[src_runtime];
+                }
+                {
+                    int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
+                    // Iterate over range Drive.gyro.g.x(0,1)->[Drive.gyro.integrator1.in(0,1)].
+                    {
+                        int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                        int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                        int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Reaction 1 of Drive.gyro.g triggers 1 downstream reactions
+                        // through port Drive.gyro.g.x.
+                        drive_gyro_g_self[src_runtime]->_lf__reaction_1.triggered_sizes[triggers_index[src_runtime]] = 1;
+                        // For reaction 1 of Drive.gyro.g, allocate an
+                        // array of trigger pointers for downstream reactions through port Drive.gyro.g.x
+                        trigger_t** trigger_array = (trigger_t**)_lf_allocate(
+                                1, sizeof(trigger_t*),
+                                &drive_gyro_g_self[src_runtime]->base.allocations); 
+                        drive_gyro_g_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime]++] = trigger_array;
+                    }
+                    // Iterate over range Drive.gyro.g.y(0,1)->[Drive.gyro.integrator2.in(0,1)].
+                    {
+                        int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                        int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                        int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Reaction 1 of Drive.gyro.g triggers 1 downstream reactions
+                        // through port Drive.gyro.g.y.
+                        drive_gyro_g_self[src_runtime]->_lf__reaction_1.triggered_sizes[triggers_index[src_runtime]] = 1;
+                        // For reaction 1 of Drive.gyro.g, allocate an
+                        // array of trigger pointers for downstream reactions through port Drive.gyro.g.y
+                        trigger_t** trigger_array = (trigger_t**)_lf_allocate(
+                                1, sizeof(trigger_t*),
+                                &drive_gyro_g_self[src_runtime]->base.allocations); 
+                        drive_gyro_g_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime]++] = trigger_array;
+                    }
+                    // Iterate over range Drive.gyro.g.z(0,1)->[Drive.gyro.integrator3.in(0,1)].
+                    {
+                        int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                        int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                        int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Reaction 1 of Drive.gyro.g triggers 1 downstream reactions
+                        // through port Drive.gyro.g.z.
+                        drive_gyro_g_self[src_runtime]->_lf__reaction_1.triggered_sizes[triggers_index[src_runtime]] = 1;
+                        // For reaction 1 of Drive.gyro.g, allocate an
+                        // array of trigger pointers for downstream reactions through port Drive.gyro.g.z
+                        trigger_t** trigger_array = (trigger_t**)_lf_allocate(
+                                1, sizeof(trigger_t*),
+                                &drive_gyro_g_self[src_runtime]->base.allocations); 
+                        drive_gyro_g_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime]++] = trigger_array;
+                    }
+                    for (int i = 0; i < 1; i++) triggers_index[i] = 0;
+                    // Iterate over ranges Drive.gyro.g.x(0,1)->[Drive.gyro.integrator1.in(0,1)] and Drive.gyro.integrator1.in(0,1).
+                    {
+                        int src_runtime = 0; // Runtime index.
+                        SUPPRESS_UNUSED_WARNING(src_runtime);
+                        int src_channel = 0; // Channel index.
+                        SUPPRESS_UNUSED_WARNING(src_channel);
+                        int src_bank = 0; // Bank index.
+                        SUPPRESS_UNUSED_WARNING(src_bank);
+                        // Iterate over range Drive.gyro.integrator1.in(0,1).
+                        {
+                            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                            // Point to destination port Drive.gyro.integrator1.in's trigger struct.
+                            drive_gyro_g_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime] + src_channel][0] = &drive_gyro_integrator1_self[dst_runtime]->_lf__in;
+                        }
+                    }
+                    for (int i = 0; i < 1; i++) triggers_index[i] = 1;
+                    // Iterate over ranges Drive.gyro.g.y(0,1)->[Drive.gyro.integrator2.in(0,1)] and Drive.gyro.integrator2.in(0,1).
+                    {
+                        int src_runtime = 0; // Runtime index.
+                        SUPPRESS_UNUSED_WARNING(src_runtime);
+                        int src_channel = 0; // Channel index.
+                        SUPPRESS_UNUSED_WARNING(src_channel);
+                        int src_bank = 0; // Bank index.
+                        SUPPRESS_UNUSED_WARNING(src_bank);
+                        // Iterate over range Drive.gyro.integrator2.in(0,1).
+                        {
+                            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                            // Point to destination port Drive.gyro.integrator2.in's trigger struct.
+                            drive_gyro_g_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime] + src_channel][0] = &drive_gyro_integrator2_self[dst_runtime]->_lf__in;
+                        }
+                    }
+                    for (int i = 0; i < 1; i++) triggers_index[i] = 2;
+                    // Iterate over ranges Drive.gyro.g.z(0,1)->[Drive.gyro.integrator3.in(0,1)] and Drive.gyro.integrator3.in(0,1).
+                    {
+                        int src_runtime = 0; // Runtime index.
+                        SUPPRESS_UNUSED_WARNING(src_runtime);
+                        int src_channel = 0; // Channel index.
+                        SUPPRESS_UNUSED_WARNING(src_channel);
+                        int src_bank = 0; // Bank index.
+                        SUPPRESS_UNUSED_WARNING(src_bank);
+                        // Iterate over range Drive.gyro.integrator3.in(0,1).
+                        {
+                            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                            // Point to destination port Drive.gyro.integrator3.in's trigger struct.
+                            drive_gyro_g_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime] + src_channel][0] = &drive_gyro_integrator3_self[dst_runtime]->_lf__in;
+                        }
+                    }
+                }
+            
+            }
+            // **** End of non-nested deferred initialize for Drive.gyro.g
+            // **** Start non-nested deferred initialize for Drive.gyro.integrator1
+            {
+            
+                for (int index486184027c8990b = 0; index486184027c8990b < 1; index486184027c8990b++) { drive_gyro_integrator1_self[0]->_lf_out._base.source_reactor = (self_base_t*)drive_gyro_integrator1_self[0]; }
+                {
+                    int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
+                }
+            
+            }
+            // **** End of non-nested deferred initialize for Drive.gyro.integrator1
+            // **** Start non-nested deferred initialize for Drive.gyro.integrator2
+            {
+            
+                for (int index486184027c8990b = 0; index486184027c8990b < 1; index486184027c8990b++) { drive_gyro_integrator2_self[0]->_lf_out._base.source_reactor = (self_base_t*)drive_gyro_integrator2_self[0]; }
+                {
+                    int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
+                }
+            
+            }
+            // **** End of non-nested deferred initialize for Drive.gyro.integrator2
+            // **** Start non-nested deferred initialize for Drive.gyro.integrator3
+            {
+            
+                // For reference counting, set num_destinations for port Drive.gyro.integrator3.out.
+                // Iterate over range Drive.gyro.integrator3.out(0,1)->[Drive.gyro.z(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    drive_gyro_integrator3_self[src_runtime]->_lf_out._base.num_destinations = 1;
+                    drive_gyro_integrator3_self[src_runtime]->_lf_out._base.source_reactor = (self_base_t*)drive_gyro_integrator3_self[src_runtime];
+                }
+                {
+                    int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
+                    // Iterate over range Drive.gyro.integrator3.out(0,1)->[Drive.gyro.z(0,1)].
+                    {
+                        int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                        int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                        int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Reaction 0 of Drive.gyro.integrator3 triggers 1 downstream reactions
+                        // through port Drive.gyro.integrator3.out.
+                        drive_gyro_integrator3_self[src_runtime]->_lf__reaction_0.triggered_sizes[triggers_index[src_runtime]] = 1;
+                        // For reaction 0 of Drive.gyro.integrator3, allocate an
+                        // array of trigger pointers for downstream reactions through port Drive.gyro.integrator3.out
+                        trigger_t** trigger_array = (trigger_t**)_lf_allocate(
+                                1, sizeof(trigger_t*),
+                                &drive_gyro_integrator3_self[src_runtime]->base.allocations); 
+                        drive_gyro_integrator3_self[src_runtime]->_lf__reaction_0.triggers[triggers_index[src_runtime]++] = trigger_array;
+                    }
+                    for (int i = 0; i < 1; i++) triggers_index[i] = 0;
+                    // Iterate over ranges Drive.gyro.integrator3.out(0,1)->[Drive.gyro.z(0,1)] and Drive.gyro.z(0,1).
+                    {
+                        int src_runtime = 0; // Runtime index.
+                        SUPPRESS_UNUSED_WARNING(src_runtime);
+                        int src_channel = 0; // Channel index.
+                        SUPPRESS_UNUSED_WARNING(src_channel);
+                        int src_bank = 0; // Bank index.
+                        SUPPRESS_UNUSED_WARNING(src_bank);
+                        // Iterate over range Drive.gyro.z(0,1).
+                        {
+                            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                            // Port Drive.gyro.integrator3.out has reactions in its parent's parent.
+                            // Point to the trigger struct for those reactions.
+                            drive_gyro_integrator3_self[src_runtime]->_lf__reaction_0.triggers[triggers_index[src_runtime] + src_channel][0] = &drive_main_self[dst_runtime]->_lf_gyro.z_trigger;
+                        }
+                    }
+                }
+            
+            }
+            // **** End of non-nested deferred initialize for Drive.gyro.integrator3
+        }
+        // **** End of non-nested deferred initialize for Drive.gyro
+        // **** Start non-nested deferred initialize for Drive.encoder
+        {
+        
+            for (int index486184027c8990b = 0; index486184027c8990b < 1; index486184027c8990b++) { drive_encoder_self[0]->_lf_right._base.source_reactor = (self_base_t*)drive_encoder_self[0]; }
+            for (int index486184027c8990b = 0; index486184027c8990b < 1; index486184027c8990b++) { drive_encoder_self[0]->_lf_left._base.source_reactor = (self_base_t*)drive_encoder_self[0]; }
+            {
+                int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
+            }
+        
+        }
+        // **** End of non-nested deferred initialize for Drive.encoder
     }
     // **** End of non-nested deferred initialize for Drive
     // Connect inputs and outputs for reactor Drive.
@@ -1072,6 +1845,24 @@ void _lf_initialize_trigger_objects() {
             drive_disp_self[dst_runtime]->_lf_line2 = (_display_line2_t*)&drive_main_self[src_runtime]->_lf_disp.line2;
         }
     }
+    // Connect Drive.disp.line3(0,1)->[Drive.disp.line3(0,1)] to port Drive.disp.line3(0,1)
+    // Iterate over ranges Drive.disp.line3(0,1)->[Drive.disp.line3(0,1)] and Drive.disp.line3(0,1).
+    {
+        int src_runtime = 0; // Runtime index.
+        SUPPRESS_UNUSED_WARNING(src_runtime);
+        int src_channel = 0; // Channel index.
+        SUPPRESS_UNUSED_WARNING(src_channel);
+        int src_bank = 0; // Bank index.
+        SUPPRESS_UNUSED_WARNING(src_bank);
+        // Iterate over range Drive.disp.line3(0,1).
+        {
+            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+            drive_disp_self[dst_runtime]->_lf_line3 = (_display_line3_t*)&drive_main_self[src_runtime]->_lf_disp.line3;
+        }
+    }
     // Connect inputs and outputs for reactor Drive.motor.
     // Connect Drive.motor.left_power(0,1)->[Drive.motor.left_power(0,1)] to port Drive.motor.left_power(0,1)
     // Iterate over ranges Drive.motor.left_power(0,1)->[Drive.motor.left_power(0,1)] and Drive.motor.left_power(0,1).
@@ -1109,9 +1900,183 @@ void _lf_initialize_trigger_objects() {
             drive_motor_self[dst_runtime]->_lf_right_power = (_motors_right_power_t*)&drive_main_self[src_runtime]->_lf_motor.right_power;
         }
     }
+    // Connect inputs and outputs for reactor Drive.gyro.
+    // Connect Drive.gyro.trigger(0,1)->[Drive.gyro.g.trigger(0,1)] to port Drive.gyro.g.trigger(0,1)
+    // Iterate over ranges Drive.gyro.trigger(0,1)->[Drive.gyro.g.trigger(0,1)] and Drive.gyro.g.trigger(0,1).
+    {
+        int src_runtime = 0; // Runtime index.
+        SUPPRESS_UNUSED_WARNING(src_runtime);
+        int src_channel = 0; // Channel index.
+        SUPPRESS_UNUSED_WARNING(src_channel);
+        int src_bank = 0; // Bank index.
+        SUPPRESS_UNUSED_WARNING(src_bank);
+        // Iterate over range Drive.gyro.g.trigger(0,1).
+        {
+            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+            drive_gyro_g_self[dst_runtime]->_lf_trigger = (_gyro_trigger_t*)&drive_main_self[src_runtime]->_lf_gyro.trigger;
+        }
+    }
+    // Connect inputs and outputs for reactor Drive.gyro.g.
+    // Connect Drive.gyro.g.x(0,1)->[Drive.gyro.integrator1.in(0,1)] to port Drive.gyro.integrator1.in(0,1)
+    // Iterate over ranges Drive.gyro.g.x(0,1)->[Drive.gyro.integrator1.in(0,1)] and Drive.gyro.integrator1.in(0,1).
+    {
+        int src_runtime = 0; // Runtime index.
+        SUPPRESS_UNUSED_WARNING(src_runtime);
+        int src_channel = 0; // Channel index.
+        SUPPRESS_UNUSED_WARNING(src_channel);
+        int src_bank = 0; // Bank index.
+        SUPPRESS_UNUSED_WARNING(src_bank);
+        // Iterate over range Drive.gyro.integrator1.in(0,1).
+        {
+            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+            drive_gyro_integrator1_self[dst_runtime]->_lf_in = (_trapezoidalintegrator_in_t*)&drive_gyro_g_self[src_runtime]->_lf_x;
+        }
+    }
+    // Connect Drive.gyro.g.y(0,1)->[Drive.gyro.integrator2.in(0,1)] to port Drive.gyro.integrator2.in(0,1)
+    // Iterate over ranges Drive.gyro.g.y(0,1)->[Drive.gyro.integrator2.in(0,1)] and Drive.gyro.integrator2.in(0,1).
+    {
+        int src_runtime = 0; // Runtime index.
+        SUPPRESS_UNUSED_WARNING(src_runtime);
+        int src_channel = 0; // Channel index.
+        SUPPRESS_UNUSED_WARNING(src_channel);
+        int src_bank = 0; // Bank index.
+        SUPPRESS_UNUSED_WARNING(src_bank);
+        // Iterate over range Drive.gyro.integrator2.in(0,1).
+        {
+            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+            drive_gyro_integrator2_self[dst_runtime]->_lf_in = (_trapezoidalintegrator_in_t*)&drive_gyro_g_self[src_runtime]->_lf_y;
+        }
+    }
+    // Connect Drive.gyro.g.z(0,1)->[Drive.gyro.integrator3.in(0,1)] to port Drive.gyro.integrator3.in(0,1)
+    // Iterate over ranges Drive.gyro.g.z(0,1)->[Drive.gyro.integrator3.in(0,1)] and Drive.gyro.integrator3.in(0,1).
+    {
+        int src_runtime = 0; // Runtime index.
+        SUPPRESS_UNUSED_WARNING(src_runtime);
+        int src_channel = 0; // Channel index.
+        SUPPRESS_UNUSED_WARNING(src_channel);
+        int src_bank = 0; // Bank index.
+        SUPPRESS_UNUSED_WARNING(src_bank);
+        // Iterate over range Drive.gyro.integrator3.in(0,1).
+        {
+            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+            drive_gyro_integrator3_self[dst_runtime]->_lf_in = (_trapezoidalintegrator_in_t*)&drive_gyro_g_self[src_runtime]->_lf_z;
+        }
+    }
+    // Connect inputs and outputs for reactor Drive.gyro.integrator1.
+    
+    // Connect inputs and outputs for reactor Drive.gyro.integrator2.
+    
+    // Connect inputs and outputs for reactor Drive.gyro.integrator3.
+    // Connect Drive.gyro.integrator3.out(0,1)->[Drive.gyro.z(0,1)] to port Drive.gyro.z(0,1)
+    // Iterate over ranges Drive.gyro.integrator3.out(0,1)->[Drive.gyro.z(0,1)] and Drive.gyro.z(0,1).
+    {
+        int src_runtime = 0; // Runtime index.
+        SUPPRESS_UNUSED_WARNING(src_runtime);
+        int src_channel = 0; // Channel index.
+        SUPPRESS_UNUSED_WARNING(src_channel);
+        int src_bank = 0; // Bank index.
+        SUPPRESS_UNUSED_WARNING(src_bank);
+        // Iterate over range Drive.gyro.z(0,1).
+        {
+            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+            drive_main_self[dst_runtime]->_lf_gyro.z = (_gyroangle_z_t*)&drive_gyro_integrator3_self[src_runtime]->_lf_out;
+        }
+    }
+    // Connect inputs and outputs for reactor Drive.encoder.
+    
+    
     {
     }
     {
+    }
+    {
+    }
+    {
+        {
+        }
+        {
+        }
+        {
+        }
+        {
+        }
+        {
+            int count = 0; SUPPRESS_UNUSED_WARNING(count);
+            {
+                // Add port Drive.gyro.g.x to array of is_present fields.
+                envs[drive_main].is_present_fields[0 + count] = &drive_gyro_g_self[0]->_lf_x.is_present;
+                #ifdef FEDERATED_DECENTRALIZED
+                // Add port Drive.gyro.g.x to array of intended_tag fields.
+                envs[drive_main]._lf_intended_tag_fields[0 + count] = &drive_gyro_g_self[0]->_lf_x.intended_tag;
+                #endif // FEDERATED_DECENTRALIZED
+                count++;
+                // Add port Drive.gyro.g.y to array of is_present fields.
+                envs[drive_main].is_present_fields[0 + count] = &drive_gyro_g_self[0]->_lf_y.is_present;
+                #ifdef FEDERATED_DECENTRALIZED
+                // Add port Drive.gyro.g.y to array of intended_tag fields.
+                envs[drive_main]._lf_intended_tag_fields[0 + count] = &drive_gyro_g_self[0]->_lf_y.intended_tag;
+                #endif // FEDERATED_DECENTRALIZED
+                count++;
+                // Add port Drive.gyro.g.z to array of is_present fields.
+                envs[drive_main].is_present_fields[0 + count] = &drive_gyro_g_self[0]->_lf_z.is_present;
+                #ifdef FEDERATED_DECENTRALIZED
+                // Add port Drive.gyro.g.z to array of intended_tag fields.
+                envs[drive_main]._lf_intended_tag_fields[0 + count] = &drive_gyro_g_self[0]->_lf_z.intended_tag;
+                #endif // FEDERATED_DECENTRALIZED
+                count++;
+            }
+        }
+        {
+            int count = 0; SUPPRESS_UNUSED_WARNING(count);
+            {
+                // Add port Drive.gyro.integrator1.out to array of is_present fields.
+                envs[drive_main].is_present_fields[3 + count] = &drive_gyro_integrator1_self[0]->_lf_out.is_present;
+                #ifdef FEDERATED_DECENTRALIZED
+                // Add port Drive.gyro.integrator1.out to array of intended_tag fields.
+                envs[drive_main]._lf_intended_tag_fields[3 + count] = &drive_gyro_integrator1_self[0]->_lf_out.intended_tag;
+                #endif // FEDERATED_DECENTRALIZED
+                count++;
+            }
+        }
+        {
+            int count = 0; SUPPRESS_UNUSED_WARNING(count);
+            {
+                // Add port Drive.gyro.integrator2.out to array of is_present fields.
+                envs[drive_main].is_present_fields[4 + count] = &drive_gyro_integrator2_self[0]->_lf_out.is_present;
+                #ifdef FEDERATED_DECENTRALIZED
+                // Add port Drive.gyro.integrator2.out to array of intended_tag fields.
+                envs[drive_main]._lf_intended_tag_fields[4 + count] = &drive_gyro_integrator2_self[0]->_lf_out.intended_tag;
+                #endif // FEDERATED_DECENTRALIZED
+                count++;
+            }
+        }
+        {
+            int count = 0; SUPPRESS_UNUSED_WARNING(count);
+            {
+                // Add port Drive.gyro.integrator3.out to array of is_present fields.
+                envs[drive_main].is_present_fields[5 + count] = &drive_gyro_integrator3_self[0]->_lf_out.is_present;
+                #ifdef FEDERATED_DECENTRALIZED
+                // Add port Drive.gyro.integrator3.out to array of intended_tag fields.
+                envs[drive_main]._lf_intended_tag_fields[5 + count] = &drive_gyro_integrator3_self[0]->_lf_out.intended_tag;
+                #endif // FEDERATED_DECENTRALIZED
+                count++;
+            }
+        }
     }
     {
     }
@@ -1120,9 +2085,9 @@ void _lf_initialize_trigger_objects() {
         int count = 0; SUPPRESS_UNUSED_WARNING(count);
         {
             {
-                envs[drive_main].is_present_fields[0 + count] = &drive_main_self[0]->_lf_disp.line0.is_present;
+                envs[drive_main].is_present_fields[6 + count] = &drive_main_self[0]->_lf_disp.line0.is_present;
                 #ifdef FEDERATED_DECENTRALIZED
-                envs[drive_main]._lf_intended_tag_fields[0 + count] = &drive_main_self[0]->_lf_disp.line0.intended_tag;
+                envs[drive_main]._lf_intended_tag_fields[6 + count] = &drive_main_self[0]->_lf_disp.line0.intended_tag;
                 #endif // FEDERATED_DECENTRALIZED
                 count++;
             }
@@ -1133,9 +2098,9 @@ void _lf_initialize_trigger_objects() {
         int count = 0; SUPPRESS_UNUSED_WARNING(count);
         {
             {
-                envs[drive_main].is_present_fields[1 + count] = &drive_main_self[0]->_lf_disp.line1.is_present;
+                envs[drive_main].is_present_fields[7 + count] = &drive_main_self[0]->_lf_disp.line1.is_present;
                 #ifdef FEDERATED_DECENTRALIZED
-                envs[drive_main]._lf_intended_tag_fields[1 + count] = &drive_main_self[0]->_lf_disp.line1.intended_tag;
+                envs[drive_main]._lf_intended_tag_fields[7 + count] = &drive_main_self[0]->_lf_disp.line1.intended_tag;
                 #endif // FEDERATED_DECENTRALIZED
                 count++;
             }
@@ -1146,9 +2111,9 @@ void _lf_initialize_trigger_objects() {
         int count = 0; SUPPRESS_UNUSED_WARNING(count);
         {
             {
-                envs[drive_main].is_present_fields[2 + count] = &drive_main_self[0]->_lf_disp.line2.is_present;
+                envs[drive_main].is_present_fields[8 + count] = &drive_main_self[0]->_lf_disp.line2.is_present;
                 #ifdef FEDERATED_DECENTRALIZED
-                envs[drive_main]._lf_intended_tag_fields[2 + count] = &drive_main_self[0]->_lf_disp.line2.intended_tag;
+                envs[drive_main]._lf_intended_tag_fields[8 + count] = &drive_main_self[0]->_lf_disp.line2.intended_tag;
                 #endif // FEDERATED_DECENTRALIZED
                 count++;
             }
@@ -1159,9 +2124,9 @@ void _lf_initialize_trigger_objects() {
         int count = 0; SUPPRESS_UNUSED_WARNING(count);
         {
             {
-                envs[drive_main].is_present_fields[3 + count] = &drive_main_self[0]->_lf_line.calibrate.is_present;
+                envs[drive_main].is_present_fields[9 + count] = &drive_main_self[0]->_lf_line.calibrate.is_present;
                 #ifdef FEDERATED_DECENTRALIZED
-                envs[drive_main]._lf_intended_tag_fields[3 + count] = &drive_main_self[0]->_lf_line.calibrate.intended_tag;
+                envs[drive_main]._lf_intended_tag_fields[9 + count] = &drive_main_self[0]->_lf_line.calibrate.intended_tag;
                 #endif // FEDERATED_DECENTRALIZED
                 count++;
             }
@@ -1172,9 +2137,9 @@ void _lf_initialize_trigger_objects() {
         int count = 0; SUPPRESS_UNUSED_WARNING(count);
         {
             {
-                envs[drive_main].is_present_fields[4 + count] = &drive_main_self[0]->_lf_motor.left_power.is_present;
+                envs[drive_main].is_present_fields[10 + count] = &drive_main_self[0]->_lf_motor.left_power.is_present;
                 #ifdef FEDERATED_DECENTRALIZED
-                envs[drive_main]._lf_intended_tag_fields[4 + count] = &drive_main_self[0]->_lf_motor.left_power.intended_tag;
+                envs[drive_main]._lf_intended_tag_fields[10 + count] = &drive_main_self[0]->_lf_motor.left_power.intended_tag;
                 #endif // FEDERATED_DECENTRALIZED
                 count++;
             }
@@ -1185,9 +2150,9 @@ void _lf_initialize_trigger_objects() {
         int count = 0; SUPPRESS_UNUSED_WARNING(count);
         {
             {
-                envs[drive_main].is_present_fields[5 + count] = &drive_main_self[0]->_lf_motor.right_power.is_present;
+                envs[drive_main].is_present_fields[11 + count] = &drive_main_self[0]->_lf_motor.right_power.is_present;
                 #ifdef FEDERATED_DECENTRALIZED
-                envs[drive_main]._lf_intended_tag_fields[5 + count] = &drive_main_self[0]->_lf_motor.right_power.intended_tag;
+                envs[drive_main]._lf_intended_tag_fields[11 + count] = &drive_main_self[0]->_lf_motor.right_power.intended_tag;
                 #endif // FEDERATED_DECENTRALIZED
                 count++;
             }
@@ -1198,9 +2163,35 @@ void _lf_initialize_trigger_objects() {
         int count = 0; SUPPRESS_UNUSED_WARNING(count);
         {
             {
-                envs[drive_main].is_present_fields[6 + count] = &drive_main_self[0]->_lf_line.trigger.is_present;
+                envs[drive_main].is_present_fields[12 + count] = &drive_main_self[0]->_lf_line.trigger.is_present;
                 #ifdef FEDERATED_DECENTRALIZED
-                envs[drive_main]._lf_intended_tag_fields[6 + count] = &drive_main_self[0]->_lf_line.trigger.intended_tag;
+                envs[drive_main]._lf_intended_tag_fields[12 + count] = &drive_main_self[0]->_lf_line.trigger.intended_tag;
+                #endif // FEDERATED_DECENTRALIZED
+                count++;
+            }
+        }
+    }
+    // Add port Drive.gyro.trigger to array of is_present fields.
+    {
+        int count = 0; SUPPRESS_UNUSED_WARNING(count);
+        {
+            {
+                envs[drive_main].is_present_fields[13 + count] = &drive_main_self[0]->_lf_gyro.trigger.is_present;
+                #ifdef FEDERATED_DECENTRALIZED
+                envs[drive_main]._lf_intended_tag_fields[13 + count] = &drive_main_self[0]->_lf_gyro.trigger.intended_tag;
+                #endif // FEDERATED_DECENTRALIZED
+                count++;
+            }
+        }
+    }
+    // Add port Drive.disp.line3 to array of is_present fields.
+    {
+        int count = 0; SUPPRESS_UNUSED_WARNING(count);
+        {
+            {
+                envs[drive_main].is_present_fields[14 + count] = &drive_main_self[0]->_lf_disp.line3.is_present;
+                #ifdef FEDERATED_DECENTRALIZED
+                envs[drive_main]._lf_intended_tag_fields[14 + count] = &drive_main_self[0]->_lf_disp.line3.intended_tag;
                 #endif // FEDERATED_DECENTRALIZED
                 count++;
             }
@@ -1210,10 +2201,34 @@ void _lf_initialize_trigger_objects() {
         int count = 0; SUPPRESS_UNUSED_WARNING(count);
         {
             // Add port Drive.line.reflect to array of is_present fields.
-            envs[drive_main].is_present_fields[7 + count] = &drive_line_self[0]->_lf_reflect.is_present;
+            envs[drive_main].is_present_fields[15 + count] = &drive_line_self[0]->_lf_reflect.is_present;
             #ifdef FEDERATED_DECENTRALIZED
             // Add port Drive.line.reflect to array of intended_tag fields.
-            envs[drive_main]._lf_intended_tag_fields[7 + count] = &drive_line_self[0]->_lf_reflect.intended_tag;
+            envs[drive_main]._lf_intended_tag_fields[15 + count] = &drive_line_self[0]->_lf_reflect.intended_tag;
+            #endif // FEDERATED_DECENTRALIZED
+            count++;
+        }
+    }
+    {
+        int count = 0; SUPPRESS_UNUSED_WARNING(count);
+        {
+        }
+    }
+    {
+        int count = 0; SUPPRESS_UNUSED_WARNING(count);
+        {
+            // Add port Drive.encoder.right to array of is_present fields.
+            envs[drive_main].is_present_fields[16 + count] = &drive_encoder_self[0]->_lf_right.is_present;
+            #ifdef FEDERATED_DECENTRALIZED
+            // Add port Drive.encoder.right to array of intended_tag fields.
+            envs[drive_main]._lf_intended_tag_fields[16 + count] = &drive_encoder_self[0]->_lf_right.intended_tag;
+            #endif // FEDERATED_DECENTRALIZED
+            count++;
+            // Add port Drive.encoder.left to array of is_present fields.
+            envs[drive_main].is_present_fields[16 + count] = &drive_encoder_self[0]->_lf_left.is_present;
+            #ifdef FEDERATED_DECENTRALIZED
+            // Add port Drive.encoder.left to array of intended_tag fields.
+            envs[drive_main]._lf_intended_tag_fields[16 + count] = &drive_encoder_self[0]->_lf_left.intended_tag;
             #endif // FEDERATED_DECENTRALIZED
             count++;
         }
@@ -1237,6 +2252,10 @@ void _lf_initialize_trigger_objects() {
         // index is the OR of level 4 and 
         // deadline 9223372036854775807 shifted left 16 bits.
         drive_main_self[0]->_lf__reaction_3.index = 0xffffffffffff0004LL;
+        drive_main_self[0]->_lf__reaction_4.chain_id = 1;
+        // index is the OR of level 5 and 
+        // deadline 9223372036854775807 shifted left 16 bits.
+        drive_main_self[0]->_lf__reaction_4.index = 0xffffffffffff0005LL;
     
         // Set reaction priorities for ReactorInstance Drive.line
         {
@@ -1271,13 +2290,71 @@ void _lf_initialize_trigger_objects() {
             // deadline 9223372036854775807 shifted left 16 bits.
             drive_motor_self[0]->_lf__reaction_0.index = 0xffffffffffff0000LL;
             drive_motor_self[0]->_lf__reaction_1.chain_id = 1;
-            // index is the OR of level 5 and 
-            // deadline 9223372036854775807 shifted left 16 bits.
-            drive_motor_self[0]->_lf__reaction_1.index = 0xffffffffffff0005LL;
-            drive_motor_self[0]->_lf__reaction_2.chain_id = 1;
             // index is the OR of level 6 and 
             // deadline 9223372036854775807 shifted left 16 bits.
-            drive_motor_self[0]->_lf__reaction_2.index = 0xffffffffffff0006LL;
+            drive_motor_self[0]->_lf__reaction_1.index = 0xffffffffffff0006LL;
+            drive_motor_self[0]->_lf__reaction_2.chain_id = 1;
+            // index is the OR of level 7 and 
+            // deadline 9223372036854775807 shifted left 16 bits.
+            drive_motor_self[0]->_lf__reaction_2.index = 0xffffffffffff0007LL;
+        }
+    
+    
+        // Set reaction priorities for ReactorInstance Drive.gyro
+        {
+        
+            // Set reaction priorities for ReactorInstance Drive.gyro.g
+            {
+                drive_gyro_g_self[0]->_lf__reaction_0.chain_id = 1;
+                // index is the OR of level 0 and 
+                // deadline 9223372036854775807 shifted left 16 bits.
+                drive_gyro_g_self[0]->_lf__reaction_0.index = 0xffffffffffff0000LL;
+                drive_gyro_g_self[0]->_lf__reaction_1.chain_id = 1;
+                // index is the OR of level 3 and 
+                // deadline 9223372036854775807 shifted left 16 bits.
+                drive_gyro_g_self[0]->_lf__reaction_1.index = 0xffffffffffff0003LL;
+            }
+        
+        
+            // Set reaction priorities for ReactorInstance Drive.gyro.integrator1
+            {
+                drive_gyro_integrator1_self[0]->_lf__reaction_0.chain_id = 1;
+                // index is the OR of level 4 and 
+                // deadline 9223372036854775807 shifted left 16 bits.
+                drive_gyro_integrator1_self[0]->_lf__reaction_0.index = 0xffffffffffff0004LL;
+            }
+        
+        
+            // Set reaction priorities for ReactorInstance Drive.gyro.integrator2
+            {
+                drive_gyro_integrator2_self[0]->_lf__reaction_0.chain_id = 1;
+                // index is the OR of level 4 and 
+                // deadline 9223372036854775807 shifted left 16 bits.
+                drive_gyro_integrator2_self[0]->_lf__reaction_0.index = 0xffffffffffff0004LL;
+            }
+        
+        
+            // Set reaction priorities for ReactorInstance Drive.gyro.integrator3
+            {
+                drive_gyro_integrator3_self[0]->_lf__reaction_0.chain_id = 1;
+                // index is the OR of level 4 and 
+                // deadline 9223372036854775807 shifted left 16 bits.
+                drive_gyro_integrator3_self[0]->_lf__reaction_0.index = 0xffffffffffff0004LL;
+            }
+        
+        }
+    
+    
+        // Set reaction priorities for ReactorInstance Drive.encoder
+        {
+            drive_encoder_self[0]->_lf__reaction_0.chain_id = 1;
+            // index is the OR of level 0 and 
+            // deadline 9223372036854775807 shifted left 16 bits.
+            drive_encoder_self[0]->_lf__reaction_0.index = 0xffffffffffff0000LL;
+            drive_encoder_self[0]->_lf__reaction_1.chain_id = 1;
+            // index is the OR of level 1 and 
+            // deadline 9223372036854775807 shifted left 16 bits.
+            drive_encoder_self[0]->_lf__reaction_1.index = 0xffffffffffff0001LL;
         }
     
     }

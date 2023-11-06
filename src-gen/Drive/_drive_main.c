@@ -49,9 +49,15 @@ void _drive_mainreaction_function_2(void* instance_args) {
         _line_trigger_t* trigger;
     
     } line;
+    struct gyro {
+        _gyroangle_trigger_t* trigger;
+    
+    } gyro;
     line.trigger = &(self->_lf_line.trigger);
+    gyro.trigger = &(self->_lf_gyro.trigger);
     #line 52 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     lf_set(line.trigger, true);
+    lf_set(gyro.trigger, true);
 }
 #include "include/api/set_undef.h"
 #include "include/api/set.h"
@@ -70,48 +76,106 @@ void _drive_mainreaction_function_3(void* instance_args) {
         _display_line0_t* line0;
     _display_line1_t* line1;
     _display_line2_t* line2;
+    _display_line3_t* line3;
     
     } disp;
     line.reflect = self->_lf_line.reflect;
+    reactor_mode_t* TURN_RIGHT = &self->_lf__modes[1];
+    lf_mode_change_type_t _lf_TURN_RIGHT_change_type = reset_transition;
     motor.left_power = &(self->_lf_motor.left_power);
     motor.right_power = &(self->_lf_motor.right_power);
     disp.line0 = &(self->_lf_disp.line0);
     disp.line1 = &(self->_lf_disp.line1);
     disp.line2 = &(self->_lf_disp.line2);
-    #line 57 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    disp.line3 = &(self->_lf_disp.line3);
+    #line 58 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     //Logic for driving
               //Printing to the LED Screen
               static char buf0[17];
               static char buf1[17];
               static char buf2[17];
+              static char buf3[17];
     
-              //As the vehicle detects black lines in the left and right line sensors 
-              //the motors should increase and decrease depending on the intensity of the line sensors
-              if (line.reflect->value[0] > 800) {
-                //Left line sensor, turning the motors right to adjust the car back to the right.
-                uint32_t feedback_adjustment = 0.10f + (line.reflect->value[0] / 5000); //As the line sensor value increases, the adj should be larger
-                lf_set(motor.left_power, 0.15f);
-                lf_set(motor.right_power, feedback_adjustment);
+              //Robot: Aim to keep the robot moving forward by 
+              //using the center line sensor which is line[2] 
     
-                snprintf(buf0, 17, "Left");
-              } else { 
+              if (line.reflect->value[1] > 700) {
+                //Adjusting the robot to the right if the left sensor is detected
+                lf_set(motor.left_power, 0.075f);
+                lf_set(motor.right_power, 0.1f);
+                snprintf(buf0, 17, "Left Sensor Detected");
+              } else {
                 snprintf(buf0, 17, " ");
               }
     
-              if (line.reflect->value[4] > 800) {
-                //Right line sensor, turning the motors left to adjust the car back to the left.
-                uint32_t feedback_adjustment = 0.10f + (line.reflect->value[4] / 5000); //As the line sensor value increases, the adj should be larger
-                lf_set(motor.left_power, 0.15f);
-                lf_set(motor.right_power, feedback_adjustment);
+              if(line.reflect->value[2] > 800) {
+                lf_set(motor.left_power, 0.05f);
+                lf_set(motor.right_power, 0.05f);
+                snprintf(buf1, 17, "Centered");
+              } else {
+                snprintf(buf1, 17, " ");
+              }
     
-                snprintf(buf2, 17, "Right");
+              if (line.reflect->value[3] > 700) {
+                //Adjusting the robot to the left if the right sensor is detected
+                lf_set(motor.left_power, 0.1f);
+                lf_set(motor.right_power, 0.075f);
+                snprintf(buf2, 17, "Right Sensor Detected");
               } else {
                 snprintf(buf2, 17, " ");
               }
     
+              if (line.reflect->value[4] >= 1000) {
+                //When the most rightmost line sensor detects a black line, 
+                //this means that there is a turn. We turn 90degrees to the right.
+                // lf_set(motor.left_power, 0.15f);
+                // lf_set(motor.right_power, 0.1f);'
+                lf_set(motor.left_power, 0);
+                lf_set(motor.right_power, 0);
+                snprintf(buf3, 17, "Turn Right");
+              }
+    
+    
+              if (line.reflect->value[0] >= 1000) {
+                //When the most rightmost line sensor detects a black line, 
+                //this means that there is a turn. We turn 90degrees to the right.
+                // lf_set(motor.left_power, 0.15f);
+                // lf_set(motor.right_power, 0.1f);'
+                lf_set(motor.left_power, 0);
+                lf_set(motor.right_power, 0);
+                snprintf(buf3, 17, "Turn Left Detected");
+              }
+    
+    
               lf_set(disp.line0, buf0);
               lf_set(disp.line1, buf1);
               lf_set(disp.line2, buf2);
+              lf_set(disp.line3, buf3);
+}
+#include "include/api/set_undef.h"
+#include "include/api/set.h"
+void _drive_mainreaction_function_4(void* instance_args) {
+    _drive_main_main_self_t* self = (_drive_main_main_self_t*)instance_args; SUPPRESS_UNUSED_WARNING(self);
+    struct gyro {
+        _gyroangle_z_t* z;
+    
+    } gyro;
+    struct motor {
+        _motors_left_power_t* left_power;
+    _motors_right_power_t* right_power;
+    
+    } motor;
+    gyro.z = self->_lf_gyro.z;
+    reactor_mode_t* DRIVE = &self->_lf__modes[0];
+    lf_mode_change_type_t _lf_DRIVE_change_type = reset_transition;
+    motor.left_power = &(self->_lf_motor.left_power);
+    motor.right_power = &(self->_lf_motor.right_power);
+    #line 129 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    if (gyro.z->value - self->angle <= -90) {
+      lf_set_mode(DRIVING);
+      lf_set(motors.left_power, 0.15);
+      lf_set(motors.right_power, 0.15);
+    }
 }
 #include "include/api/set_undef.h"
 _drive_main_main_self_t* new__drive_main() {
@@ -145,6 +209,29 @@ _drive_main_main_self_t* new__drive_main() {
     // Set the _width variable for all cases. This will be -2
     // if the reactor is not a bank of reactors.
     self->_lf_motor_width = -2;
+    // Set the _width variable for all cases. This will be -2
+    // if the reactor is not a bank of reactors.
+    self->_lf_gyro_width = -2;
+    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/IMU.lf"
+    #ifdef FEDERATED_DECENTRALIZED
+    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/IMU.lf"
+    self->_lf_gyro.z_trigger.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
+    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/IMU.lf"
+    #endif // FEDERATED_DECENTRALIZED
+    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/IMU.lf"
+    self->_lf_gyro.z_reactions[0] = &self->_lf__reaction_4;
+    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/IMU.lf"
+    self->_lf_gyro.z_trigger.reactions = self->_lf_gyro.z_reactions;
+    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/IMU.lf"
+    self->_lf_gyro.z_trigger.last = NULL;
+    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/IMU.lf"
+    self->_lf_gyro.z_trigger.number_of_reactions = 1;
+    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/IMU.lf"
+    #ifdef FEDERATED
+    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/IMU.lf"
+    self->_lf_gyro.z_trigger.physical_time_of_arrival = NEVER;
+    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/lib/IMU.lf"
+    #endif // FEDERATED
     #line 38 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_0.number = 0;
     #line 38 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
@@ -187,89 +274,103 @@ _drive_main_main_self_t* new__drive_main() {
     self->_lf__reaction_2.name = "?";
     #line 51 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_2.mode = NULL;
-    #line 56 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 57 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_3.number = 3;
-    #line 56 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 57 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_3.function = _drive_mainreaction_function_3;
-    #line 56 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 57 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_3.self = self;
-    #line 56 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 57 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_3.deadline_violation_handler = NULL;
-    #line 56 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 57 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_3.STP_handler = NULL;
-    #line 56 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 57 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_3.name = "?";
-    #line 56 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 57 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__reaction_3.mode = &self->_lf__modes[0];
-    #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 128 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    self->_lf__reaction_4.number = 4;
+    #line 128 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    self->_lf__reaction_4.function = _drive_mainreaction_function_4;
+    #line 128 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    self->_lf__reaction_4.self = self;
+    #line 128 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    self->_lf__reaction_4.deadline_violation_handler = NULL;
+    #line 128 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    self->_lf__reaction_4.STP_handler = NULL;
+    #line 128 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    self->_lf__reaction_4.name = "?";
+    #line 128 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    self->_lf__reaction_4.mode = &self->_lf__modes[1];
+    #line 29 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__t.last = NULL;
-    #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 29 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     #ifdef FEDERATED_DECENTRALIZED
-    #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 29 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__t.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
-    #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 29 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     #endif // FEDERATED_DECENTRALIZED
-    #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
-    #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 29 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 29 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__t_reactions[0] = &self->_lf__reaction_2;
-    #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 29 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__t.reactions = &self->_lf__t_reactions[0];
-    #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 29 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__t.number_of_reactions = 1;
-    #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 29 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     #ifdef FEDERATED
-    #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 29 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__t.physical_time_of_arrival = NEVER;
-    #line 24 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 29 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     #endif // FEDERATED
     self->_lf__t.is_timer = true;
     #ifdef FEDERATED_DECENTRALIZED
     self->_lf__t.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
     #endif // FEDERATED_DECENTRALIZED
-    #line 25 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 30 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__seconds.last = NULL;
-    #line 25 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 30 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     #ifdef FEDERATED_DECENTRALIZED
-    #line 25 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 30 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__seconds.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
-    #line 25 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 30 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     #endif // FEDERATED_DECENTRALIZED
     self->_lf__seconds.is_timer = true;
     #ifdef FEDERATED_DECENTRALIZED
     self->_lf__seconds.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
     #endif // FEDERATED_DECENTRALIZED
-    #line 26 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 31 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__end_calibration.last = NULL;
-    #line 26 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 31 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     #ifdef FEDERATED_DECENTRALIZED
-    #line 26 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 31 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__end_calibration.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
-    #line 26 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 31 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     #endif // FEDERATED_DECENTRALIZED
-    #line 26 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
-    #line 26 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 31 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 31 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__end_calibration_reactions[0] = &self->_lf__reaction_1;
-    #line 26 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 31 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__end_calibration.reactions = &self->_lf__end_calibration_reactions[0];
-    #line 26 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 31 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__end_calibration.number_of_reactions = 1;
-    #line 26 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 31 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     #ifdef FEDERATED
-    #line 26 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 31 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__end_calibration.physical_time_of_arrival = NEVER;
-    #line 26 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 31 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     #endif // FEDERATED
     self->_lf__end_calibration.is_timer = true;
     #ifdef FEDERATED_DECENTRALIZED
     self->_lf__end_calibration.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
     #endif // FEDERATED_DECENTRALIZED
-    #line 28 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 33 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__backup.last = NULL;
-    #line 28 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 33 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     #ifdef FEDERATED_DECENTRALIZED
-    #line 28 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 33 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__backup.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
-    #line 28 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 33 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     #endif // FEDERATED_DECENTRALIZED
     self->_lf__backup.is_timer = true;
     #ifdef FEDERATED_DECENTRALIZED
@@ -285,14 +386,22 @@ _drive_main_main_self_t* new__drive_main() {
     self->_lf__startup.is_timer = false;
     // Initialize modes
     self_base_t* _lf_self_base = (self_base_t*)self;
-    #line 55 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 56 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__modes[0].state = &_lf_self_base->_lf__mode_state;
-    #line 55 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 56 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__modes[0].name = "DRIVE";
-    #line 55 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 56 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__modes[0].deactivation_time = 0;
-    #line 55 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    #line 56 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
     self->_lf__modes[0].flags = 0;
+    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    self->_lf__modes[1].state = &_lf_self_base->_lf__mode_state;
+    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    self->_lf__modes[1].name = "TURN_RIGHT";
+    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    self->_lf__modes[1].deactivation_time = 0;
+    #line 125 "/home/dobbs/ucb_related/fall2023/eecs149/port/src/Drive.lf"
+    self->_lf__modes[1].flags = 0;
     // Initialize mode state
     _lf_self_base->_lf__mode_state.parent_mode = NULL;
     _lf_self_base->_lf__mode_state.initial_mode = &self->_lf__modes[0];

@@ -15,68 +15,33 @@
 import Line from "lib/Line.lf"
 import Display from "lib/Display.lf"
 import Motors from "lib/Motors.lf"
+import GyroAngle from "lib/IMU.lf"
+import Encoders from "lib/Encoders.lf"
 
 main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
   line = new Line()
   disp = new Display()
   motor = new Motors()
+  gyro = new GyroAngle()
+  encoder = new Encoders()
+
 
   timer t(0, sample_period)
   timer seconds(0, 1 s)
   timer end_calibration(calibration_time)
   state count: int = 0
-
   timer backup(0, 500 ms)
 
-
-  reaction(seconds) -> disp.line3 {=
-  static char buf[17];
-  snprintf(buf, 17, "time:%8d s", self->count++);
-  lf_set(disp.line3, buf);
-  =}
-
-  reaction(end_calibration) -> line.calibrate, motor.left_power, motor.right_power {=
-  lf_set(line.calibrate, false);
-  lf_set(motor.left_power, 0.10f);
-  lf_set(motor.right_power, 0.10f);
-  =}
-
-  reaction(t) -> line.trigger {=
-  lf_set(line.trigger, true);
-  =}
-
-  initial mode DRIVE {
-      reaction(line.reflect) -> motor.left_power, motor.right_power{= 
-          //Drives using the line on the ground as reference
-
-          /* Motor feedback to stay on the correct path */
-          //If the left side of the line sensors are detected, we shift the robot right
-          if (line.reflect->value[0] >= 800) {
-            //Rotating wheels right to adjust to the right
-            lf_set(motor.left_power, 0.15f);
-            lf_set(motor.right_power, 0.10f);
-          } 
-
-          //If the right side of the line sensors are detected, we shift the robot left
-          if (line.reflect->value[4] >= 800) {
-            //Rotate the wheel left
-            lf_set(motor.left_power, 0.10f);
-            lf_set(motor.right_power, 0.15f);
-          } 
-      =} 
-      
-
-  }
-
-  mode STOP_DETECTED {
-      reaction(backup) -> DRIVE, motor.left_power, motor.right_power {=
-          lf_set(motor.left_power, 0.0f);
-          lf_set(motor.right_power, 0.0f);
-          lf_set_mode(DRIVE);
-      =}
-  }
+  state distance:float = 0
 
 
+  // reaction(seconds) -> disp.line3 {=
+  //   static char buf[17];
+  //   snprintf(buf, 17, "time:%8d s", self->count++);
+  //   lf_set(disp.line3, buf);
+  // =}
+
+  //Calibrating the line sensors
   reaction(startup) -> disp.line0, disp.line1, disp.line2 {=
     lf_set(disp.line0, "CALIBRATING");
     lf_set(disp.line1, "Roll robot over");
@@ -84,27 +49,85 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
     
   =}
 
-  reaction(line.reflect) -> disp.line0, disp.line1, disp.line2 {=
-    static char buf0[17];
-    static char buf1[17];
-    static char buf2[17];
-    if (line.reflect->value[0] >= 1000) {
-      snprintf(buf0, 17, "Right");
-    } else {
-      snprintf(buf0, 17, " ");
-    }
-    if (line.reflect->value[2] >= 1000) {
-      snprintf(buf1, 17, "Center");
-    } else { 
-      snprintf(buf1, 17, " ");
-    }
-    if (line.reflect->value[4] >= 1000) {
-      snprintf(buf2, 17, "Left.");
-    } else { 
-      snprintf(buf2, 17, " ");
-    }
-    lf_set(disp.line0, buf0);
-    lf_set(disp.line1, buf1);
-    lf_set(disp.line2, buf2);
+  reaction(end_calibration) -> line.calibrate, motor.left_power, motor.right_power {=
+    lf_set(line.calibrate, false);
+    lf_set(motor.left_power, 0.10f);
+    lf_set(motor.right_power, 0.10f);
   =}
+
+  reaction(t) -> line.trigger, gyro.trigger {=
+    lf_set(line.trigger, true);
+    lf_set(gyro.trigger, true);
+  =}
+
+  initial mode DRIVE {
+      reaction(line.reflect) -> motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {= 
+        //Logic for driving
+        //Printing to the LED Screen
+        static char buf0[17];
+        static char buf1[17];
+        static char buf2[17];
+        static char buf3[17];
+
+        //Robot: Aim to keep the robot moving forward by 
+        //using the center line sensor which is line[2] 
+
+        if (line.reflect->value[1] > 700) {
+          //Adjusting the robot to the right if the left sensor is detected
+          lf_set(motor.left_power, 0.075f);
+          lf_set(motor.right_power, 0.1f);
+          snprintf(buf0, 17, "Left Sensor Detected");
+        } else {
+          snprintf(buf0, 17, " ");
+        }
+
+        if(line.reflect->value[2] > 800) {
+          lf_set(motor.left_power, 0.05f);
+          lf_set(motor.right_power, 0.05f);
+          snprintf(buf1, 17, "Centered");
+        } else {
+          snprintf(buf1, 17, " ");
+        }
+
+        if (line.reflect->value[3] > 700) {
+          //Adjusting the robot to the left if the right sensor is detected
+          lf_set(motor.left_power, 0.1f);
+          lf_set(motor.right_power, 0.075f);
+          snprintf(buf2, 17, "Right Sensor Detected");
+        } else {
+          snprintf(buf2, 17, " ");
+        }
+
+        if (line.reflect->value[4] >= 1000) {
+          //When the most rightmost line sensor detects a black line, 
+          //this means that there is a turn. We turn 90degrees to the right.
+          // lf_set(motor.left_power, 0.15f);
+          // lf_set(motor.right_power, 0.1f);'
+          lf_set(motor.left_power, 0);
+          lf_set(motor.right_power, 0);
+          snprintf(buf3, 17, "Turn Right");
+        }
+
+
+        if (line.reflect->value[0] >= 1000) {
+          //When the most rightmost line sensor detects a black line, 
+          //this means that there is a turn. We turn 90degrees to the right.
+          // lf_set(motor.left_power, 0.15f);
+          // lf_set(motor.right_power, 0.1f);'
+          lf_set(motor.left_power, 0);
+          lf_set(motor.right_power, 0);
+          snprintf(buf3, 17, "Turn Left Detected");
+        }
+
+
+        lf_set(disp.line0, buf0);
+        lf_set(disp.line1, buf1);
+        lf_set(disp.line2, buf2);
+        lf_set(disp.line3, buf3);
+      =} 
+      
+
+  }
+
+
 }
