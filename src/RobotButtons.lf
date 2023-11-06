@@ -1,0 +1,28 @@
+/**
+ * Testing the Buttons on Pololu 3pi+ 2040 Robot 
+ */
+ target C {
+    platform: {
+      name: "rp2040",
+      board: "pololu_3pi_2040_robot"
+    },
+    threading: false,
+  }
+
+  preamble {=
+    #include <string.h>
+    #include <stdio.h>
+    #include <pico/stdlib.h>
+    #include <pololu_3pi_2040_robot.h>
+  =}
+  
+  main reactor {
+    timer t(0, 100ms); 
+
+    //Buttons from the Pololu 3pi+ 2040 Robot
+
+    reaction(t) {=
+
+    =}
+  }
+  
