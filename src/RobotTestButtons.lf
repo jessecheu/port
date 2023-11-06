@@ -1,0 +1,34 @@
+/**
+ * Testing the Buttons on Pololu 3pi+ 2040 Robot 
+ * Code adapted from https://github.com/pololu/pololu-3pi-2040-robot/tree/master/c/pololu_3pi_2040_robot 
+ */
+ target C {
+    platform: {
+      name: "rp2040",
+      board: "pololu_3pi_2040_robot"
+    },
+    threading: false,
+  }
+
+  import Display from "lib/Display.lf"
+  import Buttons from "lib/Buttons.lf"
+
+  preamble {=
+    //#include <pololu_3pi_2040_robot.h>
+  =}
+  
+  main reactor {
+    timer t(0, 100ms);
+    disp = new Display();
+    buttons = new Buttons();
+
+    reaction(t) -> buttons.trigger {= 
+      lf_set(buttons.trigger, true);
+    =}
+
+    reaction(buttons.button_a, buttons.button_a, buttons.button_a) -> disp.line0, disp.line1, disp.line2 {=
+      lf_set(disp.line0, buttons.button_a ? "A is pressed" : "A is not pressed");
+    =}
+
+  }
+  

@@ -1,0 +1,45 @@
+/**
+ * Button
+ */
+ target C {
+    platform: {
+      name: "rp2040",
+      board: "pololu_3pi_2040_robot"
+    },
+    threading: false,
+    files: ["../../robot-lib/"],  // Needed to find button.h
+    cmake-include: ["../../robot-lib/robot-lib.txt"]  // Needed to find button.h
+  }
+  
+  preamble {=
+    #include <string.h>
+    #include <stdio.h>
+    #include <pico/stdlib.h>
+    #include <button.h>
+
+    // Pushbuttons on the control board.
+    button button_a_init = BUTTON_INIT(button_a_is_pressed);
+    button button_b_init = BUTTON_INIT(button_b_is_pressed);
+    button button_c_init = BUTTON_INIT(button_c_is_pressed);
+
+
+  =}
+
+  reactor Buttons { 
+    input trigger: bool
+    output button_a: bool
+    output button_b: bool
+    output button_c: bool
+
+    reaction(trigger) -> button_a, button_b, button_c {=
+        // Read the buttons.
+        bool a = button_a_is_pressed();
+        bool b = button_b_is_pressed();
+        bool c = button_c_is_pressed();
+
+        lf_set(button_a, a);
+        lf_set(button_b, b);
+        lf_set(button_c, c);
+    =}
+  }
+  

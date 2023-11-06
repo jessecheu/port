@@ -1,6 +1,6 @@
 add_library(robot
 #  src/battery.c
-#  src/button.c
+  src/button.c
   src/display.c
   src/font_8x8.c
   src/font_8x16.c
