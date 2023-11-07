@@ -33,7 +33,7 @@
     timer backup(0, 500 ms)
 
     state distance:float = 0
-  
+    state turn_dir:bool = 0
     //Calibrating the line sensors
     reaction(startup) -> disp.line0, disp.line1, disp.line2 {=
       lf_set(disp.line0, "CALIBRATING");
@@ -99,8 +99,10 @@
             lf_set(motor.left_power, 0.20);
             lf_set(motor.right_power, -0.075f);
             self->angle_before_turn = gyro.z->value;
+            snprintf("TURN RIGHT");
+            self->turn_dir = 1;
             lf_set_mode(TURN_CORNER);
-            snprintf(buf3, 17, "R: %.1f", gyro.z->value);
+            
           }
 
 
@@ -112,8 +114,9 @@
             lf_set(motor.left_power, -0.075f);
             lf_set(motor.right_power, 0.20f);
             self->angle_before_turn = gyro.z->value;
+            snprintf("TURN LEFT");
+            self->turn_dir = 0;
             lf_set_mode(TURN_CORNER);
-            snprintf(buf3, 17, "D: %.1f", gyro.z->value);
           }
 
 
@@ -129,17 +132,81 @@
     mode TURN_CORNER { 
       //Use gyro to check if the turn has been made completely before changing to DRIVE mode again
 
+      // reaction(gyro.z) -> DRIVE, motor.left_power, motor.right_power, disp.line0, disp.line3 {=
+      //   //gyro.z = -90, angle_before_turn = -10, result = -80
+      //   lf_set(disp.line0, "TURN_CORNER Mode");
+      //   if (abs(gyro.z->value - self->angle_before_turn) >= 80) {
+      //     lf_set(motor.left_power, 0.1);
+      //     lf_set(motor.right_power, 0.1);
+      //     lf_set(disp.line3, " ");
+      //     lf_set_mode(DRIVE);
+      //   }
+      // =}
+
+      // Turns using feedback control
       reaction(gyro.z) -> DRIVE, motor.left_power, motor.right_power, disp.line0, disp.line3 {=
-        //gyro.z = -90, angle_before_turn = -10, result = -80
         lf_set(disp.line0, "TURN_CORNER Mode");
-        if (abs(gyro.z->value - self->angle_before_turn) >= 80) {
+        if(abs(gyro.z->value - self->angle_before_turn >= 90)) {
           lf_set(motor.left_power, 0.1);
           lf_set(motor.right_power, 0.1);
           lf_set(disp.line3, " ");
           lf_set_mode(DRIVE);
         }
+        if(self->turn_dir) {
+          if (line.reflect->value[1] > 700) {
+            //Adjusting the robot to the right if the left sensor is detected
+            lf_set(motor.left_power, -0.08f);
+            lf_set(motor.right_power, 0.0175f);
+            snprintf(buf0, 17, "Left Sensor Detected");
+          } else {
+            snprintf(buf0, 17, " ");
+          }
+
+          if(line.reflect->value[2] > 800) {
+            lf_set(motor.left_power, -0.075f);
+            lf_set(motor.right_power, 0.2f);
+            snprintf(buf1, 17, "Centered");
+          } else {
+            snprintf(buf1, 17, " ");
+          }
+
+          if (line.reflect->value[3] > 700) {
+            //Adjusting the robot to the left if the right sensor is detected
+            lf_set(motor.left_power, -0.05f);
+            lf_set(motor.right_power, 0.075f);
+            snprintf(buf2, 17, "Right Sensor Detected");
+          } else {
+            snprintf(buf2, 17, " ");
+        }
+        }else{
+          if (line.reflect->value[1] > 700) {
+            //Adjusting the robot to the right if the left sensor is detected
+            lf_set(motor.left_power, 0.175f);
+            lf_set(motor.right_power, -0.1f);
+            snprintf(buf0, 17, "Left Sensor Detected");
+          } else {
+            snprintf(buf0, 17, " ");
+          }
+
+          if(line.reflect->value[2] > 800) {
+            lf_set(motor.left_power, 0.2f);
+            lf_set(motor.right_power, -0.075f);
+            snprintf(buf1, 17, "Centered");
+          } else {
+            snprintf(buf1, 17, " ");
+          }
+
+          if (line.reflect->value[3] > 700) {
+            //Adjusting the robot to the left if the right sensor is detected
+            lf_set(motor.left_power, 0.225f);
+            lf_set(motor.right_power, -0.05f);
+            snprintf(buf2, 17, "Right Sensor Detected");
+          } else {
+            snprintf(buf2, 17, " ");
+        }
+        }
       =}
     }
-  
+      
   }
   
