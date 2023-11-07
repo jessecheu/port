@@ -18,7 +18,7 @@
   =}
   
   main reactor {
-    timer t(0, 100ms);
+    timer t(0, 250ms);
     disp = new Display();
     buttons = new Buttons();
 
@@ -26,8 +26,10 @@
       lf_set(buttons.trigger, true);
     =}
 
-    reaction(buttons.button_a, buttons.button_a, buttons.button_a) -> disp.line0, disp.line1, disp.line2 {=
-      lf_set(disp.line0, buttons.button_a ? "A is pressed" : "A is not pressed");
+    reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> disp.line0, disp.line1, disp.line2 {=
+      lf_set(disp.line0, buttons.button_a->value ? "A is pressed" : "A is not pressed");
+      lf_set(disp.line1, buttons.button_b->value ? "B is pressed" : "B is not pressed");
+      lf_set(disp.line2, buttons.button_c->value ? "C is pressed" : "C is not pressed");
     =}
 
   }

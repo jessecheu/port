@@ -1,5 +1,0 @@
-/home/dobbs/ucb_related/fall2023/eecs149/port/src-gen/DriveStraight/build/elf2uf2/CMakeFiles/elf2uf2.dir
-/home/dobbs/ucb_related/fall2023/eecs149/port/src-gen/DriveStraight/build/elf2uf2/CMakeFiles/edit_cache.dir
-/home/dobbs/ucb_related/fall2023/eecs149/port/src-gen/DriveStraight/build/elf2uf2/CMakeFiles/rebuild_cache.dir
-/home/dobbs/ucb_related/fall2023/eecs149/port/src-gen/DriveStraight/build/elf2uf2/boot_uf2_headers/CMakeFiles/edit_cache.dir
-/home/dobbs/ucb_related/fall2023/eecs149/port/src-gen/DriveStraight/build/elf2uf2/boot_uf2_headers/CMakeFiles/rebuild_cache.dir

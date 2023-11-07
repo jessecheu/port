@@ -1,7 +1,12 @@
 // Copyright (C) Pololu Corporation.  See LICENSE.txt for details.
 
+#ifndef BUTTON_H
+#define BUTTON_H
+
+#pragma once
 /// @file button.h
 /// Functions for accessing the pushbuttons on the control board.
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -49,3 +54,6 @@ typedef struct button {
 /// @return 0 if no event happened, -1 if the button was released,
 /// 1 if it was pressed.
 int button_check(button *);
+
+
+#endif

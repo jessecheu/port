@@ -17,11 +17,6 @@
     #include <pico/stdlib.h>
     #include <button.h>
 
-    // Pushbuttons on the control board.
-    button button_a_init = BUTTON_INIT(button_a_is_pressed);
-    button button_b_init = BUTTON_INIT(button_b_is_pressed);
-    button button_c_init = BUTTON_INIT(button_c_is_pressed);
-
 
   =}
 
@@ -30,6 +25,18 @@
     output button_a: bool
     output button_b: bool
     output button_c: bool
+    preamble {=
+      // Pushbuttons on the control board.
+      button a_btn = BUTTON_INIT(button_a_is_pressed);
+      button b_btn = BUTTON_INIT(button_b_is_pressed);
+      button c_btn = BUTTON_INIT(button_c_is_pressed);
+    =}
+
+    // reaction(startup) -> button_a, button_b, button_c {=
+    //   lf_set(button_a, false);
+    //   lf_set(button_b, false);
+    //   lf_set(button_c, false);
+    // =}
 
     reaction(trigger) -> button_a, button_b, button_c {=
         // Read the buttons.
