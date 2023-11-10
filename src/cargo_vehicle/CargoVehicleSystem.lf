@@ -31,6 +31,7 @@
 
   
     timer t(0, sample_period)
+    timer trigger_time(0, 150 ms);
     timer seconds(0, 1 s)
     
     //Calibration Related
@@ -41,7 +42,7 @@
     state angle_before_turn: float = 0
     state button_press_time: int = 0
 
-    reaction(t) -> line.trigger, buttons.trigger {=
+    reaction(trigger_time) -> line.trigger, buttons.trigger {=
       lf_set(line.trigger, true);
       lf_set(buttons.trigger, true);
     =}
@@ -113,7 +114,7 @@
         snprintf(buf0, 17, "0:%4d 1:%4d", line.reflect->value[0], line.reflect->value[1]);
         snprintf(buf1, 17, "2:%4d 3:%4d", line.reflect->value[2], line.reflect->value[3]);
         snprintf(buf2, 17, "4:%4d", line.reflect->value[4]);
-        snprintf(buf3, 17, "Main Menu: Press [C]");
+        snprintf(buf3, 17, "Main Menu: [C]");
         lf_set(disp.line0, buf0);
         lf_set(disp.line1, buf1);
         lf_set(disp.line2, buf2);
