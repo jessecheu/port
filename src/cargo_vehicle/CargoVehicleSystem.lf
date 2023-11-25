@@ -66,10 +66,12 @@
         =}
 
         //Checking buttons
-        reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> CALIBRATION_MODE, DRIVE_MODE, EXTRA_MODE {=
+        reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> CALIBRATION_MODE, DRIVE_MODE, EXTRA_MODE, motor.left_power, motor.right_power {=
           if (buttons.button_a->value) {
             lf_set_mode(CALIBRATION_MODE);
           } else if (buttons.button_b->value) {
+            lf_set(motor.left_power, 0.1f);
+            lf_set(motor.right_power, 0.1f);
             lf_set_mode(DRIVE_MODE);
           } else if (buttons.button_c->value) {
             lf_set_mode(EXTRA_MODE);
@@ -123,7 +125,7 @@
     }
 
     mode DRIVE_MODE {
-      reaction(line.reflect) gyro.z -> TURN_CORNER, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {= 
+      reaction(line.reflect) gyro.z -> TURN_CORNER, ARRIVED_STOP_MODE, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {= 
         //Logic for driving
         //Printing to the LED Screen
         static char buf0[17];
@@ -131,9 +133,20 @@
         static char buf2[17];
         static char buf3[17];
 
+        //Stops the Vehicle if the ARRIVAL STOP lines are detected
+        uint32_t ARRIVAL_STOP_VALUE = 150;
+        if (line.reflect->value[0] >= ARRIVAL_STOP_VALUE
+            && line.reflect->value[1] >= ARRIVAL_STOP_VALUE
+            && line.reflect->value[2] >= ARRIVAL_STOP_VALUE
+            && line.reflect->value[3] >= ARRIVAL_STOP_VALUE
+            && line.reflect->value[4] >= ARRIVAL_STOP_VALUE) {
+              lf_set(motor.left_power, 0);
+              lf_set(motor.right_power, 0);
+              lf_set_mode(ARRIVED_STOP_MODE);
+        }
+
         //Robot: Aim to keep the robot moving forward by 
         //using the center line sensor which is line[2] 
-
         if (line.reflect->value[1] > 700) {
           //Adjusting the robot to the right if the left sensor is detected
           lf_set(motor.left_power, 0.075f);
@@ -165,7 +178,7 @@
           //this means that there is a turn. We turn 90degrees to the right.
           // lf_set(motor.left_power, 0.15f);
           // lf_set(motor.right_power, 0.1f);'
-          lf_set(motor.left_power, 0.20);
+          lf_set(motor.left_power, 0.10f);
           lf_set(motor.right_power, -0.075f);
           self->angle_before_turn = gyro.z->value;
           lf_set_mode(TURN_CORNER);
@@ -179,7 +192,7 @@
           // lf_set(motor.left_power, 0.15f);
           // lf_set(motor.right_power, 0.1f);'
           lf_set(motor.left_power, -0.075f);
-          lf_set(motor.right_power, 0.20f);
+          lf_set(motor.right_power, 0.10f);
           self->angle_before_turn = gyro.z->value;
           lf_set_mode(TURN_CORNER);
           snprintf(buf3, 17, "D: %.1f", gyro.z->value);
@@ -208,8 +221,20 @@
       =}
     }
 
-    mode STOP_MODE {
+    mode ARRIVED_STOP_MODE {
       //Temporarily pauses the vehicle. Entered by the DRIVE mode.
+      reaction(t) -> disp.line0, disp.line3 {=
+        //gyro.z = -90, angle_before_turn = -10, result = -80
+        lf_set(disp.line0, "ARRIVED STOP MODE");
+        lf_set(disp.line3, "Main Menu = [C]");
+      =}
+
+      //Checking buttons
+      reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MAIN_MENU_MODE {=
+        if (buttons.button_c->value) {
+          lf_set_mode(MAIN_MENU_MODE);
+        } 
+      =}
     }
 
     mode EXTRA_MODE {
