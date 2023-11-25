@@ -47,9 +47,10 @@
     //Cargo Related 
     state moving_forward_step_timer: int = 0
 
-    reaction(trigger_time) -> line.trigger, buttons.trigger {=
+    reaction(trigger_time) -> line.trigger, buttons.trigger, gyro.trigger {=
       lf_set(line.trigger, true);
       lf_set(buttons.trigger, true);
+      lf_set(gyro.trigger, true);
     =}
   
     initial mode MAIN_MENU_MODE {
@@ -141,7 +142,7 @@
         snprintf(buf0, 17, "0:%4d 1:%4d", line.reflect->value[0], line.reflect->value[1]);
         snprintf(buf1, 17, "2:%4d 3:%4d", line.reflect->value[2], line.reflect->value[3]);
         snprintf(buf2, 17, "4:%4d", line.reflect->value[4]);
-        snprintf(buf3, 17, "STOP: [C]");
+        snprintf(buf3, 17, "gyro.z: %f", gyro.z->value);
 
         //Stops the Vehicle if the ARRIVAL STOP lines are detected
         uint32_t ARRIVAL_STOP_VALUE = 400;
@@ -158,7 +159,7 @@
         //Robot: Aim to keep the robot moving forward by 
         //using the center line sensor which is line[2] 
 
-        if(line.reflect->value[2] > 500) {
+        if(line.reflect->value[2] > 550) {
           //Centered
           lf_set(motor.left_power, 0.1f);
           lf_set(motor.right_power, 0.1f);
@@ -179,7 +180,7 @@
         if (line.reflect->value[4] >= 1000) {
           //When the most rightmost line sensor detects a black line, 
           //this means that there is a turn. We turn 90degrees to the right.
-          lf_set(motor.left_power, 0.20f);
+          lf_set(motor.left_power, 0.25f);
           lf_set(motor.right_power, -0.075f);
           self->angle_before_turn = gyro.z->value;
           lf_set_mode(TURN_CORNER);
@@ -190,7 +191,7 @@
           //When the left most line sensor detects a black line, 
           //this means that there is a turn. We turn 90degrees to the left.
           lf_set(motor.left_power, -0.075f);
-          lf_set(motor.right_power, 0.20f);
+          lf_set(motor.right_power, 0.25f);
           self->angle_before_turn = gyro.z->value;
 
           lf_set_mode(TURN_CORNER);
@@ -207,18 +208,29 @@
     mode TURN_CORNER { 
       //Use gyro to check if the turn has been made completely before changing to DRIVE mode again
 
-      reaction(gyro.z) -> DRIVE_MODE, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {=
+      reaction(t) gyro.z -> DRIVE_MODE, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {=
+        static char buf0[17];
+        static char buf1[17];
+        static char buf2[17];
+        static char buf3[17];
         //gyro.z = -90, angle_before_turn = -10, result = -80
-        lf_set(disp.line0, "TURN_CORNER Mode");
-        lf_set(disp.line1, " ");
-        lf_set(disp.line2, " ");
-        lf_set(disp.line3, " ");
-        if (abs(gyro.z->value - self->angle_before_turn) >= 80) {
+
+        snprintf(buf0, 17, "TURN_CORNER Mode");
+        snprintf(buf1, 17, " ");
+        snprintf(buf2, 17, "a_b_t: %f", self->angle_before_turn);
+        snprintf(buf3, 17, "gyro.z value %f", gyro.z->value);
+
+        if (abs(gyro.z->value - self->angle_before_turn) >= 50) {
           lf_set(motor.left_power, 0.1);
           lf_set(motor.right_power, 0.1);
           lf_set(disp.line3, " ");
           lf_set_mode(DRIVE_MODE);
         }
+
+        lf_set(disp.line0, buf0);
+        lf_set(disp.line1, buf1);
+        lf_set(disp.line2, buf2);
+        lf_set(disp.line3, buf3);
       =}
     }
 
@@ -245,22 +257,22 @@
     }
 
     mode MOVE_FORWARD { 
-      reaction(t) -> MAIN_MENU_MODE, TURN_CORNER, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2,disp.line3 {= 
+      reaction(t) line.reflect, gyro.z -> DRIVE_MODE, TURN_CORNER, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2,disp.line3 {= 
         lf_set(disp.line0, "Moving Foward");
         lf_set(disp.line1, "for 1 seconds");
         lf_set(disp.line2, "then goes to");
         lf_set(disp.line3, "Main Menu");
 
-        if (self->moving_forward_step_timer >= 2) { 
+        if (self->moving_forward_step_timer >= 10) { 
           self->moving_forward_step_timer = 0;
-          lf_set(motor.left_power, 0);
-          lf_set(motor.right_power, 0);
-          lf_set_mode(MAIN_MENU_MODE);
+          lf_set(motor.left_power, 0.1);
+          lf_set(motor.right_power, 0.1);
+          lf_set_mode(DRIVE_MODE);
         } else {
           //Robot: Aim to keep the robot moving forward by 
           //using the center line sensor which is line[2] 
 
-          if(line.reflect->value[2] > 500) {
+          if(line.reflect->value[2] > 550) {
             //Centered
             lf_set(motor.left_power, 0.1f);
             lf_set(motor.right_power, 0.1f);
@@ -281,7 +293,7 @@
           if (line.reflect->value[4] >= 1000) {
             //When the most rightmost line sensor detects a black line, 
             //this means that there is a turn. We turn 90degrees to the right.
-            lf_set(motor.left_power, 0.20f);
+            lf_set(motor.left_power, 0.10f);
             lf_set(motor.right_power, -0.075f);
             self->angle_before_turn = gyro.z->value;
             lf_set_mode(TURN_CORNER);
@@ -292,7 +304,7 @@
             //When the left most line sensor detects a black line, 
             //this means that there is a turn. We turn 90degrees to the left.
             lf_set(motor.left_power, -0.075f);
-            lf_set(motor.right_power, 0.20f);
+            lf_set(motor.right_power, 0.10f);
             self->angle_before_turn = gyro.z->value;
 
             lf_set_mode(TURN_CORNER);
