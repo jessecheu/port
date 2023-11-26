@@ -1,0 +1,13 @@
+/**
+ * Simple test of the
+ */
+ target C {
+    platform: "RP2040",
+    threading: false,
+  }
+  
+  main reactor {
+    preamble {=
+    
+    =}
+  }

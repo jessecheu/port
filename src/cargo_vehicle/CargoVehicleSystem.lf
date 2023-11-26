@@ -19,9 +19,9 @@
   
   main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
     preamble {=
-      #define 
     
     =}
+
     line = new Line()
     disp = new Display()
     motor = new Motors()
@@ -31,15 +31,26 @@
 
   
     timer t(0, sample_period)
+    timer trigger_time(0, 150 ms);
     timer seconds(0, 1 s)
+    
+    //Calibration Related
     timer end_calibration(calibration_time)
-
+    state calibration_startup: bool = true
     state calibration_time_count: int = 0
+
+    state angle_before_turn: float = 0
     state button_press_time: int = 0
 
-    reaction(t) -> line.trigger, buttons.trigger {=
+    //Driving Related
+    
+    //Cargo Related 
+    state moving_forward_step_timer: int = 0
+
+    reaction(trigger_time) -> line.trigger, buttons.trigger, gyro.trigger {=
       lf_set(line.trigger, true);
       lf_set(buttons.trigger, true);
+      lf_set(gyro.trigger, true);
     =}
   
     initial mode MAIN_MENU_MODE {
@@ -53,7 +64,7 @@
           snprintf(buf0, 17, "[A]: Calibration Mode");
           snprintf(buf1, 17, "[B]: DRIVE Mode");
           snprintf(buf2, 17, "[C]: .... Extra");
-          snprintf(buf3, 17, "PORT Project");
+          snprintf(buf3, 17, " ");
           lf_set(disp.line0, buf0);
           lf_set(disp.line1, buf1);
           lf_set(disp.line2, buf2);
@@ -61,52 +72,66 @@
         =}
 
         //Checking buttons
-        reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> CALIBRATION_MODE, DRIVE_MODE, EXTRA_MODE {=
+        reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> CALIBRATION_MODE, DRIVE_MODE, EXTRA_MODE, motor.left_power, motor.right_power {=
           if (buttons.button_a->value) {
-            lf_set_mode(CALIBRATION_MODE)
-          } else if (buttons.button_b->vaue) {
-            lf_set_mode(DRIVE_MODE)
+            lf_set_mode(CALIBRATION_MODE);
+          } else if (buttons.button_b->value) {
+            lf_set(motor.left_power, 0.1f);
+            lf_set(motor.right_power, 0.1f);
+            lf_set_mode(DRIVE_MODE);
           } else if (buttons.button_c->value) {
-            lf_set_mode(EXTRA_MODE)
+            lf_set_mode(EXTRA_MODE);
           }
         =}
     }
 
     mode CALIBRATION_MODE { 
-
-      /* Entering the Calibration mode and stops it after x amount of seconds*/
-      reaction(startup) -> disp.line0, disp.line1, disp.line2 {=
-        lf_set(disp.line0, "CALIBRATING");
-        lf_set(disp.line1, "Roll robot over");
-        lf_set(disp.line2, "light and dark.");
-      =}  
-
-      reaction(seconds) -> disp.line3 {=
-        static char buf[17];
-        snprintf(buf, 17, "time:%8d s", self->calibration_time_count++);
-        lf_set(disp.line3, buf);
+      /* Going back to the main menu */
+      reaction(buttons.button_c) -> MAIN_MENU_MODE {=
+        if(buttons.button_c->value) {
+          self->calibration_startup = true; //Resetting the calibration values
+          self->calibration_time_count = 0;
+          lf_set_mode(MAIN_MENU_MODE);
+        }
       =}
 
-      reaction(end_calibration) -> line.calibrate {=
-        lf_set(line.calibrate, false);
+      /* Entering the Calibration mode and stops it after x amount of seconds*/
+      reaction(seconds) -> line.calibrate, disp.line0, disp.line1, disp.line2, disp.line3 {=
+        if (self->calibration_startup) {
+          lf_set(disp.line0, "CALIBRATING");
+          lf_set(disp.line1, "Roll robot over");
+          lf_set(disp.line2, "light and dark.");
+          static char buf[17];
+          snprintf(buf, 17, "time:%8d s", self->calibration_time_count++);
+          lf_set(disp.line3, buf);
+          lf_set(line.calibrate, true);
+          if (self->calibration_time_count > 10) {
+            lf_set(line.calibrate, false);
+            self->calibration_startup = false;
+          }
+        }
+
       =}
 
       /* After calibration mode, allows for users to see on the LED screen the line encoder values*/
-      reaction(line.reflect) -> disp.line0, disp.line1, disp.line2 {=
+      reaction(line.reflect) -> disp.line0, disp.line1, disp.line2, disp.line3 {=
         static char buf0[17];
         static char buf1[17];
         static char buf2[17];
+        static char buf3[17];
         snprintf(buf0, 17, "0:%4d 1:%4d", line.reflect->value[0], line.reflect->value[1]);
         snprintf(buf1, 17, "2:%4d 3:%4d", line.reflect->value[2], line.reflect->value[3]);
         snprintf(buf2, 17, "4:%4d", line.reflect->value[4]);
+        snprintf(buf3, 17, "Main Menu: [C]");
         lf_set(disp.line0, buf0);
         lf_set(disp.line1, buf1);
         lf_set(disp.line2, buf2);
+        lf_set(disp.line3, buf3);
       =}
     }
 
     mode DRIVE_MODE {
-      reaction(line.reflect) gyro.z -> TURN_CORNER, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {= 
+      reaction(line.reflect) gyro.z -> TURN_CORNER, ARRIVED_STOP_MODE, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {= 
         //Logic for driving
         //Printing to the LED Screen
         static char buf0[17];
@@ -114,58 +139,77 @@
         static char buf2[17];
         static char buf3[17];
 
-        //Robot: Aim to keep the robot moving forward by 
-        //using the center line sensor which is line[2] 
+        snprintf(buf0, 17, "0:%4d 1:%4d", line.reflect->value[0], line.reflect->value[1]);
+        snprintf(buf1, 17, "2:%4d 3:%4d", line.reflect->value[2], line.reflect->value[3]);
+        snprintf(buf2, 17, "4:%4d", line.reflect->value[4]);
+        snprintf(buf3, 17, "gyro.z: %f", gyro.z->value);
 
-        if (line.reflect->value[1] > 700) {
+        //Stops the Vehicle if the ARRIVAL STOP lines are detected
+        uint32_t ARRIVAL_STOP_VALUE = 400;
+        if (line.reflect->value[0] >= ARRIVAL_STOP_VALUE
+            && line.reflect->value[1] >= ARRIVAL_STOP_VALUE
+            && line.reflect->value[2] >= ARRIVAL_STOP_VALUE
+            && line.reflect->value[3] >= ARRIVAL_STOP_VALUE
+            && line.reflect->value[4] >= ARRIVAL_STOP_VALUE) {
+              lf_set(motor.left_power, 0);
+              lf_set(motor.right_power, 0);
+              lf_set_mode(ARRIVED_STOP_MODE);
+        }
+
+        //Robot: Aim to keep the robot moving forward by 
+        //using the center line sensor which is line[2]
+        //Adjusting based on the middle sensors
+        if(line.reflect->value[2] > 550) {
+          //Centered
+          lf_set(motor.left_power, 0.1f);
+          lf_set(motor.right_power, 0.1f);
+        } 
+
+        if (line.reflect->value[1] > 500) {
           //Adjusting the robot to the right if the left sensor is detected
           lf_set(motor.left_power, 0.075f);
-          lf_set(motor.right_power, 0.1f);
-          snprintf(buf0, 17, "Left Sensor Detected");
-        } else {
-          snprintf(buf0, 17, " ");
+          lf_set(motor.right_power, 0.10f);
         }
 
-        if(line.reflect->value[2] > 800) {
-          lf_set(motor.left_power, 0.1f);
-          lf_set(motor.right_power, 0.1f);
-          snprintf(buf1, 17, "Centered");
-        } else {
-          snprintf(buf1, 17, " ");
-        }
-
-        if (line.reflect->value[3] > 700) {
+        if (line.reflect->value[3] > 500) {
           //Adjusting the robot to the left if the right sensor is detected
-          lf_set(motor.left_power, 0.1f);
+          lf_set(motor.left_power, 0.10f);
           lf_set(motor.right_power, 0.075f);
-          snprintf(buf2, 17, "Right Sensor Detected");
-        } else {
-          snprintf(buf2, 17, " ");
+        }  
+
+        //Adjusting based on the sidelined sensors
+        if (line.reflect->value[4] < 800 && line.reflect->value[4] > 500) {
+          //Adjust right.
+          lf_set(motor.left_power, 0.10f);
+          lf_set(motor.right_power, 0.075f);
         }
 
+        if (line.reflect->value[0] < 800 && line.reflect->value[0] > 500) {
+          //Adjust right.
+          lf_set(motor.left_power, 0.075f);
+          lf_set(motor.right_power, 0.10f);
+        }
+        
+        
+        //Detecting a right Turn
         if (line.reflect->value[4] >= 1000) {
           //When the most rightmost line sensor detects a black line, 
           //this means that there is a turn. We turn 90degrees to the right.
-          // lf_set(motor.left_power, 0.15f);
-          // lf_set(motor.right_power, 0.1f);'
-          lf_set(motor.left_power, 0.20);
+          lf_set(motor.left_power, 0.25f);
           lf_set(motor.right_power, -0.075f);
           self->angle_before_turn = gyro.z->value;
           lf_set_mode(TURN_CORNER);
-          snprintf(buf3, 17, "R: %.1f", gyro.z->value);
         }
 
-
+        //Detecting a left turn.
         if (line.reflect->value[0] >= 1000) {
-          //When the most rightmost line sensor detects a black line, 
-          //this means that there is a turn. We turn 90degrees to the right.
-          // lf_set(motor.left_power, 0.15f);
-          // lf_set(motor.right_power, 0.1f);'
+          //When the left most line sensor detects a black line, 
+          //this means that there is a turn. We turn 90degrees to the left.
           lf_set(motor.left_power, -0.075f);
-          lf_set(motor.right_power, 0.20f);
+          lf_set(motor.right_power, 0.25f);
           self->angle_before_turn = gyro.z->value;
+
           lf_set_mode(TURN_CORNER);
-          snprintf(buf3, 17, "D: %.1f", gyro.z->value);
         }
 
 
@@ -179,24 +223,128 @@
     mode TURN_CORNER { 
       //Use gyro to check if the turn has been made completely before changing to DRIVE mode again
 
-      reaction(gyro.z) -> DRIVE_MODE, motor.left_power, motor.right_power, disp.line0, disp.line3 {=
+      reaction(t) gyro.z -> DRIVE_MODE, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {=
+        static char buf0[17];
+        static char buf1[17];
+        static char buf2[17];
+        static char buf3[17];
         //gyro.z = -90, angle_before_turn = -10, result = -80
-        lf_set(disp.line0, "TURN_CORNER Mode");
-        if (abs(gyro.z->value - self->angle_before_turn) >= 80) {
+
+        snprintf(buf0, 17, "TURN_CORNER Mode");
+        snprintf(buf1, 17, " ");
+        snprintf(buf2, 17, "a_b_t: %f", self->angle_before_turn);
+        snprintf(buf3, 17, "gyro.z value %f", gyro.z->value);
+
+        if (abs(gyro.z->value - self->angle_before_turn) >= 43) {
           lf_set(motor.left_power, 0.1);
           lf_set(motor.right_power, 0.1);
           lf_set(disp.line3, " ");
-          lf_set_mode(DRIVE);
+          lf_set_mode(DRIVE_MODE);
+        }
+
+        lf_set(disp.line0, buf0);
+        lf_set(disp.line1, buf1);
+        lf_set(disp.line2, buf2);
+        lf_set(disp.line3, buf3);
+      =}
+    }
+
+    mode ARRIVED_STOP_MODE {
+      //Temporarily pauses the vehicle. Entered by the DRIVE mode.
+      reaction(t) -> motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2,disp.line3 {=
+        //gyro.z = -90, angle_before_turn = -10, result = -80
+        lf_set(motor.left_power, 0);
+        lf_set(motor.right_power, 0);
+        lf_set(disp.line0, "ARRIVED STOP MODE");
+        lf_set(disp.line1, " ");
+        lf_set(disp.line2, " ");
+        lf_set(disp.line3, "CONTINUE = [C]");
+      =}
+
+      //Checking buttons
+      reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MOVE_FORWARD, motor.left_power, motor.right_power {=
+        if (buttons.button_c->value) {
+          lf_set(motor.left_power, 0.1f);
+          lf_set(motor.right_power, 0.1f);
+          lf_set_mode(MOVE_FORWARD);
+        } 
+      =}
+    }
+
+    mode MOVE_FORWARD { 
+      reaction(t) line.reflect, gyro.z -> DRIVE_MODE, TURN_CORNER, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2,disp.line3 {= 
+        lf_set(disp.line0, "Moving Foward");
+        lf_set(disp.line1, "for 1 and half seconds");
+        lf_set(disp.line2, "then goes to");
+        lf_set(disp.line3, "Main Menu");
+
+        if (self->moving_forward_step_timer >= 10) { 
+          self->moving_forward_step_timer = 0;
+          lf_set(motor.left_power, 0.1);
+          lf_set(motor.right_power, 0.1);
+          lf_set_mode(DRIVE_MODE);
+        } else {
+          //Robot: Aim to keep the robot moving forward by 
+          //using the center line sensor which is line[2] 
+
+          if(line.reflect->value[2] > 550) {
+            //Centered
+            lf_set(motor.left_power, 0.1f);
+            lf_set(motor.right_power, 0.1f);
+          } else {
+            if (line.reflect->value[1] > 500) {
+              //Adjusting the robot to the right if the left sensor is detected
+              lf_set(motor.left_power, 0.075f);
+              lf_set(motor.right_power, 0.1f);
+            }
+
+            if (line.reflect->value[3] > 500) {
+              //Adjusting the robot to the left if the right sensor is detected
+              lf_set(motor.left_power, 0.1f);
+              lf_set(motor.right_power, 0.075f);
+            }  
+          }
+
+          if (line.reflect->value[4] >= 1000) {
+            //When the most rightmost line sensor detects a black line, 
+            //this means that there is a turn. We turn 90degrees to the right.
+            lf_set(motor.left_power, 0.10f);
+            lf_set(motor.right_power, -0.075f);
+            self->angle_before_turn = gyro.z->value;
+            lf_set_mode(TURN_CORNER);
+          }
+
+
+          if (line.reflect->value[0] >= 1000) {
+            //When the left most line sensor detects a black line, 
+            //this means that there is a turn. We turn 90degrees to the left.
+            lf_set(motor.left_power, -0.075f);
+            lf_set(motor.right_power, 0.10f);
+            self->angle_before_turn = gyro.z->value;
+
+            lf_set_mode(TURN_CORNER);
+          }
+          self->moving_forward_step_timer += 1;
         }
       =}
     }
 
-    mode STOP_MODE {
-      //Temporarily pauses the vehicle. Entered by the DRIVE mode.
-    }
-
     mode EXTRA_MODE {
       //Extra Menus and options for the car
+      reaction(t) -> disp.line0, disp.line1, disp.line2, disp.line3 {=
+        static char buf0[17];
+        static char buf1[17];
+        static char buf2[17];
+        static char buf3[17];
+        snprintf(buf0, 17, "EXTRA MODE");
+        snprintf(buf1, 17, " ");
+        snprintf(buf2, 17, " ");
+        snprintf(buf3, 17, "Main Menu: [C]");
+        lf_set(disp.line0, buf0);
+        lf_set(disp.line1, buf1);
+        lf_set(disp.line2, buf2);
+        lf_set(disp.line3, buf3);
+      =}
     }
   
   }
