@@ -8,8 +8,7 @@
     platform: {
       name: "rp2040",
       board: "pololu_3pi_2040_robot"
-    },
-    threading: false,
+    },threading: false,
   }
   
   import Line from "lib/Line.lf"
@@ -99,7 +98,7 @@
             lf_set(motor.left_power, 0.20);
             lf_set(motor.right_power, -0.075f);
             self->angle_before_turn = gyro.z->value;
-            snprintf("TURN RIGHT");
+            snprintf(buf2, 17, "TURN RIGHT");
             self->turn_dir = 1;
             lf_set_mode(TURN_CORNER);
             
@@ -114,7 +113,7 @@
             lf_set(motor.left_power, -0.075f);
             lf_set(motor.right_power, 0.20f);
             self->angle_before_turn = gyro.z->value;
-            snprintf("TURN LEFT");
+            snprintf(buf2, 17, "TURN LEFT");
             self->turn_dir = 0;
             lf_set_mode(TURN_CORNER);
           }
@@ -144,8 +143,9 @@
       // =}
 
       // Turns using feedback control
-      reaction(gyro.z) -> DRIVE, motor.left_power, motor.right_power, disp.line0, disp.line3 {=
+      reaction(gyro.z, line.reflect) -> DRIVE, motor.left_power, motor.right_power, disp.line0, disp.line3 {=
         lf_set(disp.line0, "TURN_CORNER Mode");
+        static char buf0[17];
         if(abs(gyro.z->value - self->angle_before_turn >= 90)) {
           lf_set(motor.left_power, 0.1);
           lf_set(motor.right_power, 0.1);
@@ -165,18 +165,18 @@
           if(line.reflect->value[2] > 800) {
             lf_set(motor.left_power, -0.075f);
             lf_set(motor.right_power, 0.2f);
-            snprintf(buf1, 17, "Centered");
+            snprintf(buf0, 17, "Centered");
           } else {
-            snprintf(buf1, 17, " ");
+            snprintf(buf0, 17, " ");
           }
 
           if (line.reflect->value[3] > 700) {
             //Adjusting the robot to the left if the right sensor is detected
             lf_set(motor.left_power, -0.05f);
             lf_set(motor.right_power, 0.075f);
-            snprintf(buf2, 17, "Right Sensor Detected");
+            snprintf(buf0, 17, "Right Sensor Detected");
           } else {
-            snprintf(buf2, 17, " ");
+            snprintf(buf0, 17, " ");
         }
         }else{
           if (line.reflect->value[1] > 700) {
@@ -191,18 +191,18 @@
           if(line.reflect->value[2] > 800) {
             lf_set(motor.left_power, 0.2f);
             lf_set(motor.right_power, -0.075f);
-            snprintf(buf1, 17, "Centered");
+            snprintf(buf0, 17, "Centered");
           } else {
-            snprintf(buf1, 17, " ");
+            snprintf(buf0, 17, " ");
           }
 
           if (line.reflect->value[3] > 700) {
             //Adjusting the robot to the left if the right sensor is detected
             lf_set(motor.left_power, 0.225f);
             lf_set(motor.right_power, -0.05f);
-            snprintf(buf2, 17, "Right Sensor Detected");
+            snprintf(buf0, 17, "Right Sensor Detected");
           } else {
-            snprintf(buf2, 17, " ");
+            snprintf(buf0, 17, " ");
         }
         }
       =}

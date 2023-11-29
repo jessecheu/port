@@ -1,0 +1,85 @@
+/**
+  * UART 
+  * Source: https://github.com/raspberrypi/pico-examples/blob/master/uart/hello_uart/hello_uart.c
+ */
+ target C {
+    platform: {
+      name: "rp2040",
+      board: "pololu_3pi_2040_robot"
+    },
+    threading: false,
+  }
+
+  preamble {=
+    //..
+  =}
+  
+  main reactor {
+    preamble {=
+      #include <stdio.h>
+      #include "pico/stdlib.h"
+      #include "hardware/uart.h"
+
+
+      /// \tag::hello_uart[]
+
+      #define UART_ID uart0
+      #define BAUD_RATE 115200
+
+      // We are using pins 0 and 1, but see the GPIO function select table in the
+      // datasheet for information on which other pins can be used.
+      #define UART_TX_PIN 28
+      #define UART_RX_PIN 29
+    =}
+    
+    timer t(0, 1s)
+    state count: int = 0
+    reaction (startup) {=
+      printf("Setting up the UART with the BAUD Rate.\n");
+      // Set up our UART with the required speed.
+      uart_init(UART_ID, BAUD_RATE);
+
+      // Set the TX and RX pins by using the function select on the GPIO
+      // Set datasheet for more information on function select
+      printf("Setting up the UART GPIO Pins");
+      gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
+      gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
+    =}
+
+    reaction (t) {=
+        printf("Sending data over the UART.\n");
+        // Use some the various UART functions to send out data
+        // In a default system, printf will also output via the default UART
+
+        // Send out a character without any conversions
+        uart_putc_raw(UART_ID, 'A');
+
+        // Send out a character but do CR/LF conversions
+        uart_putc(UART_ID, 'B');
+
+        // Send out a string, with CR/LF conversions
+        //uart_puts(UART_ID, " Hello, UART!\n");
+
+        static char buf[32];
+        size_t len = 1;
+        static char buf1;
+        
+        //buf1 = uart_getc(UART_ID);
+         //https://www.raspberrypi.com/documentation/pico-sdk/hardware.html#uart_example 
+        //uart_putc(UART_ID, buf1);
+        if (uart_is_readable(UART_ID)) {
+          printf("UART is readable.\n");
+          //uart_read_blocking(UART_ID, buf, len);
+          printf("%c\n", buf1);
+          
+          self->count++;
+          printf("%d\n",self->count);
+        }
+    
+    =}
+
+  }
+
+
+
+  
