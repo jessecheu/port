@@ -247,6 +247,14 @@
         lf_set(disp.line2, buf2);
         lf_set(disp.line3, buf3);
       =}
+
+    reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MAIN_MENU_MODE, motor.left_power, motor.right_power {=
+      if (buttons.button_c->value) {
+        lf_set(motor.left_power, 0);
+        lf_set(motor.right_power, 0);
+        lf_set_mode(MAIN_MENU_MODE);
+      } 
+    =}
     }
 
     mode ARRIVED_STOP_MODE {
