@@ -2,8 +2,8 @@
 #include <MultiStepper.h>
 
 // Define the stepper motor and the pins that is connected to
-AccelStepper stepper1(1, 39, 34); // (Typeof driver: with 2 pins, STEP, DIR)
-AccelStepper stepper2(1, 32, 35);
+AccelStepper stepper1(1, 27, 33); // (Typeof driver: with 2 pins, STEP, DIR)
+AccelStepper stepper2(1, 15, 32);
 
 MultiStepper steppersControl;  // Create instance of MultiStepper
 
@@ -22,8 +22,8 @@ void setup() {
 
 void loop() {
   // Store the target positions in the "gotopostion" array
-  gotoposition[0] = 200;  // 800 steps - full rotation with quater-step resolution
-  gotoposition[1] = 400;
+  gotoposition[0] = 50;  // 800 steps - full rotation with quater-step resolution
+  gotoposition[1] = 200;
 
   steppersControl.moveTo(gotoposition); // Calculates the required speed for all motors
   steppersControl.runSpeedToPosition(); // Blocks until all steppers are in position
