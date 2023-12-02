@@ -19,7 +19,13 @@
   
   main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
     preamble {=
-    
+
+      int feedback_controller(int num_desired, int num_actual, int num_max, int k) {
+        int error = num_actual - num_desired; 
+        
+        float adjustments = (1 + error/num_max) * k;
+        return adjustments;
+      }
     =}
 
     line = new Line()
@@ -158,6 +164,11 @@
 
         //Robot: Aim to keep the robot moving forward by 
         //using the center line sensor which is line[2]
+
+        //Using the feedback controller
+        //int feedback_controller(int num_desired, int num_actual, int num_max, int k);
+        float motor_right_power = feedback_controller(550, line.reflect->value[2], 1000, 0.1);
+
         //Adjusting based on the middle sensors
         if(line.reflect->value[2] > 550) {
           //Centered
