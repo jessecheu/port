@@ -20,10 +20,10 @@
   main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
     preamble {=
 
-      int motor_feedback_controller(int num_desired, int num_actual, int num_max, int k, float curr_motor) {
+      float motor_feedback_controller(int num_desired, int num_actual, int num_max, int k, float curr_motor) {
         //Examples:
         //On the line exactly. 0.1 =(550, 550, 1000, k, 0.1) = (1 + (550-550)/1000) * k * 0.1 so k = 1
-        //Not on the line. 0.1 = (550, 850, 1000, k, 0.1)
+        //Not on the line. 0.1 = (550, 850, 1000, k, 0.1) = (1 + (550-850)/1000) * k * 0.1 = 
         int error = num_actual - num_desired; 
         
         float motor_speed = (1 + error/num_max) * k * curr_motor;
@@ -52,6 +52,8 @@
     state button_press_time: int = 0
 
     //Driving Related
+    state left_motor_power: float = 0
+    state right_motor_power: float = 0
     
     //Cargo Related 
     state moving_forward_step_timer: int = 0
@@ -150,8 +152,10 @@
 
         snprintf(buf0, 17, "0:%4d 1:%4d", line.reflect->value[0], line.reflect->value[1]);
         snprintf(buf1, 17, "2:%4d 3:%4d", line.reflect->value[2], line.reflect->value[3]);
-        snprintf(buf2, 17, "4:%4d", line.reflect->value[4]);
-        snprintf(buf3, 17, "gyro.z: %f", gyro.z->value);
+        // snprintf(buf2, 17, "4:%4d", line.reflect->value[4]);
+        // snprintf(buf3, 17, "gyro.z: %f", gyro.z->value);
+        snprintf(buf2, 17, "R: %f", motor.left_power->value);
+        snprintf(buf3, 17, "L: %f", motor.right_power->value);
 
         //Stops the Vehicle if the ARRIVAL STOP lines are detected
         uint32_t ARRIVAL_STOP_VALUE = 400;
@@ -165,42 +169,6 @@
               lf_set_mode(ARRIVED_STOP_MODE);
         }
 
-        //Robot: Aim to keep the robot moving forward by 
-        //using the center line sensor which is line[2]
-
-        //Adjusting based on the middle sensors
-        if(line.reflect->value[2] > 550) {
-          //Centered
-          lf_set(motor.left_power, 0.1f);
-          lf_set(motor.right_power, 0.1f);
-        } 
-
-        if (line.reflect->value[1] > 500) {
-          //Adjusting the robot to the right if the left sensor is detected
-          lf_set(motor.left_power, 0.075f);
-          lf_set(motor.right_power, 0.10f);
-        }
-
-        if (line.reflect->value[3] > 500) {
-          //Adjusting the robot to the left if the right sensor is detected
-          lf_set(motor.left_power, 0.10f);
-          lf_set(motor.right_power, 0.075f);
-        }  
-
-        // Adjusting based on the sidelined sensors
-        if (line.reflect->value[4] < 800 && line.reflect->value[4] > 500) {
-          //Adjust right.
-          lf_set(motor.left_power, 0.10f);
-          lf_set(motor.right_power, 0.075f);
-        }
-
-        if (line.reflect->value[0] < 800 && line.reflect->value[0] > 500) {
-          //Adjust right.
-          lf_set(motor.left_power, 0.075f);
-          lf_set(motor.right_power, 0.10f);
-        }
-        
-        
         //Detecting a right Turn
         if (line.reflect->value[4] >= 1000) {
           //When the most rightmost line sensor detects a black line, 
@@ -220,6 +188,20 @@
           self->angle_before_turn = gyro.z->value;
 
           lf_set_mode(TURN_CORNER);
+        }
+
+        //Robot: Aim to keep the robot moving forward by 
+        //using feedback controllers and the left and right sensors to adjust
+        
+        //Adjusting the right motor
+        if(line.reflect->value[1] > 550) {
+            float motor_left =  motor_feedback_controller(350, line.reflect->value[1], 1000, 2, motor.left_power->value);
+            lf_set(motor.left_power, motor_left);
+        } 
+
+        if (line.reflect->value[3] > 550) {
+            float motor_right =  motor_feedback_controller(350, line.reflect->value[3], 1000, 2, motor.right_power->value);
+            lf_set(motor.right_power, motor_right);
         }
 
 
