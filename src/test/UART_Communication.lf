@@ -61,13 +61,15 @@
         uart_puts(UART_ID, " Hello, UART!\n");
 
         static char buf[32];
-        size_t len = 32;
+        size_t len = 1;
         static char buf1;
 
-        uart_read_blocking(UART_ID, buf, len); //https://www.raspberrypi.com/documentation/pico-sdk/hardware.html#uart_example 
+        //https://www.raspberrypi.com/documentation/pico-sdk/hardware.html#uart_example 
         //uart_putc(UART_ID, buf1);
         if (uart_is_readable(UART_ID)) {
+          uart_read_blocking(UART_ID, buf, len); 
           printf("%c\n", buf);
+          
         }
     
     =}
