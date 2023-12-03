@@ -14,7 +14,7 @@ void loop() {
     digitalWrite(stepPin, LOW);
     delayMicroseconds(1000);
   }
-  delay(1000); // 1 second delay
+  delay(1000); // 1 second delay.                           
 
   digitalWrite(dirPin, LOW); // change direction
   for (int x = 0; x<200; x++) {
