@@ -85,8 +85,8 @@
           if (buttons.button_a->value) {
             lf_set_mode(CALIBRATION_MODE);
           } else if (buttons.button_b->value) {
-            lf_set(motor.left_power, 0.075f);
-            lf_set(motor.right_power, 0.075f);
+            lf_set(motor.left_power, 0.10f);
+            lf_set(motor.right_power, 0.10f);
             lf_set_mode(DRIVE_MODE);
           } else if (buttons.button_c->value) {
             lf_set_mode(EXTRA_MODE);
@@ -155,17 +155,11 @@
 
         //Stops the Vehicle if the ARRIVAL STOP lines are detected
         uint32_t ARRIVAL_STOP_LOW_VALUE = 400;
-        uint32_t ARRIVAL_STOP_HIGH_VALUE = 700;
         if (line.reflect->value[0] >= ARRIVAL_STOP_LOW_VALUE
             && line.reflect->value[1] >= ARRIVAL_STOP_LOW_VALUE
             && line.reflect->value[2] >= ARRIVAL_STOP_LOW_VALUE
             && line.reflect->value[3] >= ARRIVAL_STOP_LOW_VALUE
-            && line.reflect->value[4] >= ARRIVAL_STOP_LOW_VALUE
-            && line.reflect->value[0] <= ARRIVAL_STOP_HIGH_VALUE
-            && line.reflect->value[1] <= ARRIVAL_STOP_HIGH_VALUE
-            && line.reflect->value[2] <= ARRIVAL_STOP_HIGH_VALUE
-            && line.reflect->value[3] <= ARRIVAL_STOP_HIGH_VALUE
-            && line.reflect->value[4] <= ARRIVAL_STOP_HIGH_VALUE) {
+            && line.reflect->value[4] >= ARRIVAL_STOP_LOW_VALUE) {
               lf_set(motor.left_power, 0);
               lf_set(motor.right_power, 0);
               lf_set_mode(ARRIVED_STOP_MODE);
@@ -201,12 +195,12 @@
         }
 
         if (line.reflect->value[0] < 800 && line.reflect->value[0] > 500) {
-          //Adjust right.
+          //Adjust left.
           lf_set(motor.left_power, 0.075f);
           lf_set(motor.right_power, 0.10f);
         }
 
-        if (line.reflect->value[4] >= 1000 && line.reflect->value[0] > 400 && line.reflect->value[0] <= 700)  {
+        if (line.reflect->value[4] >= 1000)  {
             //When the most rightmost line sensor detects a black line, 
             //this means that there is a turn. We turn 90degrees to the right.
             // lf_set(motor.left_power, 0.10f);
@@ -218,7 +212,7 @@
           }
 
 
-          if (line.reflect->value[0] >= 1000 && line.reflect->value[4] > 400 && line.reflect->value[4] <= 550) {
+          if (line.reflect->value[0] >= 1000) {
             //When the left most line sensor detects a black line, 
             //this means that there is a turn. We turn 90degrees to the left.
             // lf_set(motor.left_power, -0.075f);
@@ -259,14 +253,14 @@
         snprintf(buf2, 17, "a_b_t: %f", self->angle_before_turn);
         snprintf(buf3, 17, "gyro.z value %f", gyro.z->value);
 
-        if (abs(gyro.z->value - self->angle_before_turn) >= 55) {
+        if (abs(gyro.z->value - self->angle_before_turn) >= 65) {
           lf_set(motor.left_power, 0.075);
           lf_set(motor.right_power, 0.075);
           lf_set(disp.line3, " ");
           lf_set_mode(DRIVE_MODE);
         } else {
-            lf_set(motor.left_power, 0.125f);
-            lf_set(motor.right_power, -0.050f);
+            lf_set(motor.left_power, 0.075f);
+            lf_set(motor.right_power, -0.075f);
         }
 
         lf_set(disp.line0, buf0);
@@ -299,14 +293,14 @@
         snprintf(buf2, 17, "a_b_t: %f", self->angle_before_turn);
         snprintf(buf3, 17, "gyro.z value %f", gyro.z->value);
 
-        if (abs(gyro.z->value - self->angle_before_turn) >= 50) {
+        if (abs(gyro.z->value - self->angle_before_turn) >= 65) {
           lf_set(motor.left_power, 0.1);
           lf_set(motor.right_power, 0.1);
           lf_set(disp.line3, " ");
           lf_set_mode(DRIVE_MODE);
         } else {
             lf_set(motor.left_power, -0.075f);
-            lf_set(motor.right_power, 0.125f);
+            lf_set(motor.right_power, 0.075f);
         }
 
         lf_set(disp.line0, buf0);
