@@ -28,12 +28,12 @@
 
       // We are using pins 0 and 1, but see the GPIO function select table in the
       // datasheet for information on which other pins can be used.
-      #define UART_TX_PIN 28
-      #define UART_RX_PIN 29
+      #define UART_TX_PIN 0
+      #define UART_RX_PIN 1
     =}
+    
+    timer t(0, 1s)
 
-    timer t(0, 10s)
-    state count: int = 0
     reaction (startup) {=
       printf("Setting up the UART with the BAUD Rate.\n");
       // Set up our UART with the required speed.
@@ -52,31 +52,28 @@
         // In a default system, printf will also output via the default UART
 
         // Send out a character without any conversions
-        uart_putc_raw(UART_ID, 'D');
+        uart_putc_raw(UART_ID, 'A');
 
         // Send out a character but do CR/LF conversions
-        //uart_putc(UART_ID, 'B');
+        uart_putc(UART_ID, 'B');
 
         // Send out a string, with CR/LF conversions
-        //uart_puts(UART_ID, " Hello, UART!\n");
+        uart_puts(UART_ID, " Hello, UART!\n");
 
         static char buf[32];
         size_t len = 1;
         static char buf1;
-        
-        
-         //https://www.raspberrypi.com/documentation/pico-sdk/hardware.html#uart_example 
+
+        //https://www.raspberrypi.com/documentation/pico-sdk/hardware.html#uart_example 
         //uart_putc(UART_ID, buf1);
         if (uart_is_readable(UART_ID)) {
-          printf("UART is readable.\n");
-          buf1 = uart_getc(UART_ID);
-          //uart_read_blocking(UART_ID, buf, len);
-          printf("%c\n", buf1);
-          self->count++;
-          printf("%d\n",self->count);
+          uart_read_blocking(UART_ID, buf, len); 
+          printf("%c\n", buf);
+          
         }
     
     =}
+
   }
 
 

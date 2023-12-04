@@ -27,6 +27,7 @@
     =}
 
     reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> disp.line0, disp.line1, disp.line2 {=
+      printf("status of a: %d\n", buttons.button_a->value);
       lf_set(disp.line0, buttons.button_a->value ? "A is pressed" : "A is not pressed");
       lf_set(disp.line1, buttons.button_b->value ? "B is pressed" : "B is not pressed");
       lf_set(disp.line2, buttons.button_c->value ? "C is pressed" : "C is not pressed");
