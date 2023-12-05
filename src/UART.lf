@@ -9,7 +9,7 @@
     },
     threading: false,
   }
-
+  import Buttons from "lib/Buttons.lf"
   preamble {=
     //..
   =}
@@ -31,8 +31,8 @@
       #define UART_TX_PIN 28
       #define UART_RX_PIN 29
     =}
-
-    timer t(0, 10s)
+    buttons = new Buttons();
+    timer t(0, 150ms)
     state count: int = 0
     reaction (startup) {=
       printf("Setting up the UART with the BAUD Rate.\n");
@@ -45,37 +45,51 @@
       gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
       gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
     =}
+    // reaction(t) -> buttons.trigger {=
+    //   lf_set(buttons.trigger, true);
+    // =}
+    // reaction (t) {=
+    //     printf("Sending data over the UART.\n");
+    //     // Use some the various UART functions to send out data
+    //     // In a default system, printf will also output via the default UART
 
-    reaction (t) {=
-        printf("Sending data over the UART.\n");
-        // Use some the various UART functions to send out data
-        // In a default system, printf will also output via the default UART
+    //     // Send out a character without any conversions
+    //     uart_putc_raw(UART_ID, 'D');
 
-        // Send out a character without any conversions
-        uart_putc_raw(UART_ID, 'D');
+    //     // Send out a character but do CR/LF conversions
+    //     //uart_putc(UART_ID, 'B');
 
-        // Send out a character but do CR/LF conversions
-        //uart_putc(UART_ID, 'B');
+    //     // Send out a string, with CR/LF conversions
+    //     //uart_puts(UART_ID, " Hello, UART!\n");
 
-        // Send out a string, with CR/LF conversions
-        //uart_puts(UART_ID, " Hello, UART!\n");
-
-        static char buf[32];
-        size_t len = 1;
-        static char buf1;
+    //     static char buf[32];
+    //     size_t len ,= 1;
+    //     static char buf1;
         
         
-         //https://www.raspberrypi.com/documentation/pico-sdk/hardware.html#uart_example 
-        //uart_putc(UART_ID, buf1);
-        if (uart_is_readable(UART_ID)) {
-          printf("UART is readable.\n");
-          buf1 = uart_getc(UART_ID);
-          //uart_read_blocking(UART_ID, buf, len);
-          printf("%c\n", buf1);
-          self->count++;
-          printf("%d\n",self->count);
-        }
+    //      //https://www.raspberrypi.com/documentation/pico-sdk/hardware.html#uart_example 
+    //     //uart_putc(UART_ID, buf1);
+    //     if (uart_is_readable(UART_ID)) {
+    //       printf("UART is readable.\n");
+    //       buf1 = uart_getc(UART_ID);
+    //       //uart_read_blocking(UART_ID, buf, len);
+    //       printf("%c\n", buf1);
+    //       self->count++;
+    //       printf("%d\n",self->count);
+    //     }
     
+    // =}
+    reaction(t) -> buttons.trigger {=
+      lf_set(buttons.trigger, true);
+      
+    =}
+
+    reaction(buttons.button_a) {=
+     if(buttons.button_a->value) {
+      printf("Sending data over the UART.\n");
+      uart_putc_raw(UART_ID, 'D');
+     }
+      
     =}
   }
 
