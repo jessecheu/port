@@ -16,6 +16,16 @@
   import GyroAngle from "../lib/IMU.lf"
   import Encoders from "../lib/Encoders.lf"
   import Buttons from "../lib/Buttons.lf"
+
+  reactor AngleToDistance {
+    input degrees:int32_t
+    output distance:float
+  
+    reaction(degrees) -> distance {=
+      lf_set(distance, degrees->value*(9.975/360)); //cm units
+    =}
+  
+  }
   
   main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
     preamble {=
@@ -37,6 +47,7 @@
     gyro = new GyroAngle()
     encoder = new Encoders()
     buttons = new Buttons();
+    angleToDistance = new AngleToDistance();
 
   
     timer t(0, sample_period)
@@ -52,6 +63,7 @@
     state button_press_time: int = 0
 
     //Driving Related
+    state turn_drive_distance: float = 0
     
     //Cargo Related 
     state moving_forward_step_timer: int = 0
@@ -196,8 +208,8 @@
 
         if (line.reflect->value[0] < 800 && line.reflect->value[0] > 500) {
           //Adjust left.
-          lf_set(motor.left_power, 0.075f);
-          lf_set(motor.right_power, 0.10f);
+          lf_set(motor.left_power, 0.10f);
+          lf_set(motor.right_power, 0.075f);
         }
 
         if (line.reflect->value[4] >= 1000)  {
@@ -239,9 +251,18 @@
     }
 
     mode TURN_RIGHT_CORNER { 
-      //Use gyro to check if the turn has been made completely before changing to DRIVE mode again
 
-      reaction(t) gyro.z -> DRIVE_MODE, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {=
+      reaction(encoder.left) -> angleToDistance.degrees {=
+        lf_set(angleToDistance.degrees, encoder.left->value);
+      =}
+
+      reaction(angleToDistance.distance) {=
+        self->turn_drive_distance = angleToDistance.distance->value;
+      =}
+
+
+      //Use gyro to check if the turn has been made completely before changing to DRIVE mode again
+      reaction(t) gyro.z, angleToDistance.distance -> DRIVE_MODE, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {=
         static char buf0[17];
         static char buf1[17];
         static char buf2[17];
@@ -253,16 +274,26 @@
         snprintf(buf2, 17, "a_b_t: %f", self->angle_before_turn);
         snprintf(buf3, 17, "gyro.z value %f", gyro.z->value);
 
-        if (abs(gyro.z->value - self->angle_before_turn) >= 65) {
+        //After the RIGHT_TURN is detected, we drive a little more and then rotate in place.
+        if (self->turn_drive_distance <= 4) {
+          //DRIVE until the distance is greater than or equal to 4
           lf_set(motor.left_power, 0.075);
           lf_set(motor.right_power, 0.075);
-          lf_set(disp.line3, " ");
-          lf_set_mode(DRIVE_MODE);
-        } else {
-            lf_set(motor.left_power, 0.075f);
-            lf_set(motor.right_power, -0.075f);
-        }
+          lf_set(disp.line3, "Driving before Turning");
+        } else { 
+          //Rotate
+          if (abs(gyro.z->value - self->angle_before_turn) >= 90) {
+            lf_set(motor.left_power, 0.075);
+            lf_set(motor.right_power, 0.075);
+            lf_set(disp.line3, " ");
+            self->turn_drive_distance = 0; //set turn_drive_distance for the next drive
+            lf_set_mode(DRIVE_MODE);
+          } else {
+            lf_set(motor.left_power, 0.10f);
+            lf_set(motor.right_power, -0.10f);
+          }
 
+        }
         lf_set(disp.line0, buf0);
         lf_set(disp.line1, buf1);
         lf_set(disp.line2, buf2);
@@ -293,14 +324,14 @@
         snprintf(buf2, 17, "a_b_t: %f", self->angle_before_turn);
         snprintf(buf3, 17, "gyro.z value %f", gyro.z->value);
 
-        if (abs(gyro.z->value - self->angle_before_turn) >= 65) {
+        if (abs(gyro.z->value - self->angle_before_turn) >= 90) {
           lf_set(motor.left_power, 0.1);
           lf_set(motor.right_power, 0.1);
           lf_set(disp.line3, " ");
           lf_set_mode(DRIVE_MODE);
         } else {
-            lf_set(motor.left_power, -0.075f);
-            lf_set(motor.right_power, 0.075f);
+            lf_set(motor.left_power, -0.10f);
+            lf_set(motor.right_power, 0.10f);
         }
 
         lf_set(disp.line0, buf0);
