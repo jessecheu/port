@@ -59,6 +59,8 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
   state pid_Kd: float = 1;
   state pid_previous_error: float = 0
 
+  state distance_before_turn: float = 0
+
   //Cargo Related 
   state moving_forward_step_timer: int = 0
 
@@ -178,7 +180,7 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
       //using the center line sensor which is line[2] and PID Control
 
       //Driving Related - PID Controller Variable Declarations
-      float current_error = 1000 - line.reflect->value[2]  //Expected Sensor value - current Sensor value. 
+      float current_error = 1000 - line.reflect->value[2];  //Expected Sensor value - current Sensor value. 
 
       float pid_Kp = 1;
       float pid_Ki = 1;
@@ -193,7 +195,7 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
       float pid_differential_term = self->pid_Kd * pid_differential_term_error;
 
       float pid_value = pid_proportional_term + pid_integral_term + pid_differential_term;
-      self->pid_previous_error = error;
+      self->pid_previous_error = current_error;
 
       float expected_motor_power = 0.10;
       float left_side_motor_power = expected_motor_power - pid_value;
@@ -209,12 +211,12 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
         //Handling Right Turns by left rotating in place
         lf_set(motor.left_power, 0);
         lf_set(motor.right_power, 0);
-        lf_set_mode(TURN_LEFT_MODE);
+        lf_set_mode(TURN_LEFT_CORNER);
       } else if (line.reflect->value[4] >= 1000) {
         //Handling Left turns by rotating right in place
         lf_set(motor.left_power, 0);
         lf_set(motor.right_power, 0);
-        lf_set_mode(TURN_RIGHT_MODE);
+        lf_set_mode(TURN_RIGHT_CORNER);
       } else {
         //Handling going straight and staying with the line
 
