@@ -151,18 +151,13 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
   }
 
   mode DRIVE_MODE {
-    reaction(line.reflect) gyro.z, angleToDistance.distance -> ARRIVED_STOP_MODE, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {= 
+    reaction(line.reflect) gyro.z, angleToDistance.distance -> ARRIVED_STOP_MODE, TURN_LEFT_CORNER, TURN_RIGHT_CORNER, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {= 
       //Logic for driving
       //Printing to the LED Screen
       static char buf0[17];
       static char buf1[17];
       static char buf2[17];
       static char buf3[17];
-
-      snprintf(buf0, 17, "0:%4d 1:%4d", line.reflect->value[0], line.reflect->value[1]);
-      snprintf(buf1, 17, "2:%4d 3:%4d", line.reflect->value[2], line.reflect->value[3]);
-      snprintf(buf2, 17, "4:%4d", line.reflect->value[4]);
-      snprintf(buf3, 17, "gyro.z: %f", gyro.z->value);
 
       //Stops the Vehicle if the ARRIVAL STOP lines are detected
       uint32_t ARRIVAL_STOP_LOW_VALUE = 400;
@@ -198,18 +193,21 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
       self->pid_previous_error = error;
 
       float expected_motor_power = 0.10;
-      float left_side_motor_power = expected_motor_power + pid_value;
-      float right_side_motor_power = expected_motor_power - pid_value;
+      float left_side_motor_power = expected_motor_power - pid_value;
+      float right_side_motor_power = expected_motor_power + pid_value;
+
+      snprintf(buf0, 17, "0:%4d 1:%4d", line.reflect->value[0], line.reflect->value[1]);
+      snprintf(buf1, 17, "2:%4d 3:%4d", line.reflect->value[2], line.reflect->value[3]);
+      snprintf(buf2, 17, "4:%4d", line.reflect->value[4]);
+      snprintf(buf3, 17, "gyro.z: %f", gyro.z->value);
 
       //Handling Turning
       if (line.reflect->value[0] >= 1000) {
         //Handling Right Turns by left rotating in place
-        left_side_motor_power = -0.1;
-        right_side_motor_power = 0.1;
+        lf_set_mode(TURN_LEFT_MODE);
       } else if (line.reflect->value[4] >= 1000) {
         //Handling Left turns by rotating right in place
-        left_side_motor_power = 0.1;
-        right_side_motor_power = -0.1;
+        lf_set_mode(TURN_RIGHT_MODE);
       } else {
         //Handling going straight and staying with the line
 
@@ -243,6 +241,113 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
         lf_set_mode(MAIN_MENU_MODE);
       } 
     =}
+  }
+
+  mode TURN_RIGHT_CORNER { 
+      
+    //Use gyro to check if the turn has been made completely before changing to DRIVE mode again
+    reaction(t) gyro.z, angleToDistance.distance -> DRIVE_MODE, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {=
+      static char buf0[17];
+      static char buf1[17];
+      static char buf2[17];
+      static char buf3[17];
+      //gyro.z = -90, angle_before_turn = -10, result = -80
+
+      snprintf(buf0, 17, "TURN RIGHT");
+      snprintf(buf1, 17, " ");
+      snprintf(buf2, 17, "a_b_t: %f", self->angle_before_turn);
+      snprintf(buf3, 17, "gyro.z value %f", gyro.z->value);
+
+      //After the RIGHT_TURN is detected, we drive a little more and then rotate in place.
+      if (abs((angleToDistance.distance->value) - (self->distance_before_turn)) <= 1) {
+        //DRIVE until the distance is greater than or equal to 4
+        lf_set(motor.left_power, 0.075f);
+        lf_set(motor.right_power, 0.075f);
+        snprintf(buf1, 17, "Ds=%f", (angleToDistance.distance->value) - (self->distance_before_turn));
+        lf_set(disp.line3, "Driving before Turning");
+      } 
+      else { 
+        lf_set(motor.left_power, 0.0f);
+        lf_set(motor.right_power, 0.0f);
+        //Rotate
+        snprintf(buf1, 17, "Dr=%f", (angleToDistance.distance->value) - (self->distance_before_turn));
+        if (abs(gyro.z->value - self->angle_before_turn) >= 80) {
+          lf_set(motor.left_power, 0.075);
+          lf_set(motor.right_power, 0.075);
+          lf_set(disp.line3, " ");
+          lf_set_mode(DRIVE_MODE);
+        } else {
+          lf_set(motor.left_power, 0.075f);
+          lf_set(motor.right_power, -0.075f);
+        }
+
+      }
+      lf_set(disp.line0, buf0);
+      lf_set(disp.line1, buf1);
+      lf_set(disp.line2, buf2);
+      lf_set(disp.line3, buf3);
+    =}
+
+  reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MAIN_MENU_MODE, motor.left_power, motor.right_power {=
+    if (buttons.button_c->value) {
+      lf_set(motor.left_power, 0);
+      lf_set(motor.right_power, 0);
+      lf_set_mode(MAIN_MENU_MODE);
+    } 
+  =}
+  }
+
+  mode TURN_LEFT_CORNER { 
+    //Use gyro to check if the turn has been made completely before changing to DRIVE mode again
+
+    reaction(t) gyro.z, angleToDistance.distance -> DRIVE_MODE, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {=
+      static char buf0[17];
+      static char buf1[17];
+      static char buf2[17];
+      static char buf3[17];
+      //gyro.z = -90, angle_before_turn = -10, result = -80
+
+      snprintf(buf0, 17, "TURN LEFT");
+      snprintf(buf1, 17, " ");
+      snprintf(buf2, 17, "a_b_t: %f", self->angle_before_turn);
+      snprintf(buf3, 17, "gyro.z value %f", gyro.z->value);
+
+      //After the RIGHT_LEFT is detected, we drive a little more and then rotate in place.
+      if (abs((angleToDistance.distance->value) - (self->distance_before_turn)) <= 1.5) {
+        //DRIVE until the distance is greater than or equal to 4
+        lf_set(motor.left_power, 0.075);
+        lf_set(motor.right_power, 0.075);
+        snprintf(buf1, 17, "Ds=%f", (angleToDistance.distance->value) - (self->distance_before_turn));
+        lf_set(disp.line3, "Driving before Turning");
+      } 
+      else { 
+        //Rotate
+        snprintf(buf1, 17, "Dr=%f", (angleToDistance.distance->value) - (self->distance_before_turn));
+        if (abs(gyro.z->value - self->angle_before_turn) >= 80) {
+          lf_set(motor.left_power, 0.075);
+          lf_set(motor.right_power, 0.075);
+          lf_set(disp.line3, " ");
+          lf_set_mode(DRIVE_MODE);
+        } else {
+          lf_set(motor.left_power, -0.10f);
+          lf_set(motor.right_power, 0.10f);
+        }
+
+      }
+
+      lf_set(disp.line0, buf0);
+      lf_set(disp.line1, buf1);
+      lf_set(disp.line2, buf2);
+      lf_set(disp.line3, buf3);
+    =}
+
+  reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MAIN_MENU_MODE, motor.left_power, motor.right_power {=
+    if (buttons.button_c->value) {
+      lf_set(motor.left_power, 0);
+      lf_set(motor.right_power, 0);
+      lf_set_mode(MAIN_MENU_MODE);
+    } 
+  =}
   }
 
   mode ARRIVED_STOP_MODE {
