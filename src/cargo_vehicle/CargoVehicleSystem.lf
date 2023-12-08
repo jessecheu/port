@@ -180,15 +180,17 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
       //using the center line sensor which is line[2] and PID Control
 
       //Driving Related - PID Controller Variable Declarations
-      float current_error = 1000 - line.reflect->value[2];  //Expected Sensor value - current Sensor value. 
+      float expected_value = 1000; //expected line sensor[2] value we want 
+      float current_value = line.reflect->value[2] //based on the line sensor[2]
+      float current_error = expected_value - current_value;  //Expected Sensor value - current Sensor value. 
 
-      float pid_Kp = 1;
-      float pid_Ki = 1;
-      float pid_Kd = 1;
+      float pid_Kp = 0.1;
+      float pid_Ki = 0.01;
+      float pid_Kd = 0.1;
 
       float pid_proportional_term_error = current_error; 
       float pid_integral_term_error = pid_integral_term_error + current_error; //equivalent to taking the integral of the error
-      float pid_differential_term_error = pid_differential_term_error - self->pid_previous_error; //equivalent to taking the derivative of the error
+      float pid_differential_term_error = self->pid_previous_error - current_error; //equivalent to taking the derivative of the error
 
       float pid_proportional_term = self->pid_Kp * pid_proportional_term_error; 
       float pid_integral_term = self->pid_Ki * pid_integral_term_error;         
@@ -197,7 +199,9 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
       float pid_value = pid_proportional_term + pid_integral_term + pid_differential_term;
       self->pid_previous_error = current_error;
 
-      float expected_motor_power = 0.10;
+      float expected_motor_power = 0.10; //when there is no error. motor values for it to go straight
+
+      //Adjusting the Motor powers based on the PID values
       float left_side_motor_power = expected_motor_power - pid_value;
       float right_side_motor_power = expected_motor_power + pid_value;
 
@@ -221,17 +225,20 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
         //Handling going straight and staying with the line
 
         //Setting minimum and maximum speed values
-        if (left_side_motor_power > 0.15) {
-          left_side_motor_power = 0.15;
+        float max_motor_speed = 0.15;
+        float min_motor_speed = -0.15;
+
+        if (left_side_motor_power > max_motor_speed) {
+          left_side_motor_power = max_motor_speed;
         }
-        if (left_side_motor_power < 0.15) {
-          left_side_motor_power = -0.15;
+        if (left_side_motor_power < min_motor_speed) {
+          left_side_motor_power = min_motor_speed;
         }
-        if (right_side_motor_power > 0.15) {
-          right_side_motor_power = 0.15;
+        if (right_side_motor_power > max_motor_speed) {
+          right_side_motor_power = max_motor_speed;
         }
-        if (right_side_motor_power < 0.15) {
-          right_side_motor_power = -0.15;
+        if (right_side_motor_power < min_motor_speed) {
+          right_side_motor_power = min_motor_speed;
         }
       }
 
