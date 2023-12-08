@@ -182,28 +182,51 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
       //Driving Related - PID Controller Variable Declarations
       float current_error = 1000 - line.reflect->value[2]  //Expected Sensor value - current Sensor value. 
 
-      float pid_Kp = 0;
-      float pid_Ki = 0;
-      float pid_Kd = 0;
+      float pid_Kp = 1;
+      float pid_Ki = 1;
+      float pid_Kd = 1;
 
-      float pid_proportional_term_error = 0;
-      float pid_integral_term_error = 0;
-      float pid_differential_term_error = 0; 
+      float pid_proportional_term_error = current_error; 
+      float pid_integral_term_error = pid_integral_term_error + current_error; //equivalent to taking the integral of the error
+      float pid_differential_term_error = pid_differential_term_error - self->pid_previous_error; //equivalent to taking the derivative of the error
 
-      float pid_proportional_term = pid_Kp * pid_proportional_term_error;
-      float pid_integral_term = pid_Ki * pid_integral_term_error;
+      float pid_proportional_term = pid_Kp * pid_proportional_term_error; 
+      float pid_integral_term = pid_Ki * pid_integral_term_error;         
       float pid_differential_term = pid_Kd * pid_differential_term_error;
-
-      float left_side_motor_power = 0;
-      float right_side_motor_power = 0;
 
       float pid_value = pid_proportional_term + pid_integral_term + pid_differential_term;
       self->pid_previous_error = error;
 
+      float expected_motor_power = 0.10;
+      float left_side_motor_power = expected_motor_power + pid_value;
+      float right_side_motor_power = expected_motor_power - pid_value;
 
-      //Setting minimum and maximum speed values
+      //Handling Turning
+      if (line.reflect->value[0] >= 1000) {
+        //Handling Right Turns by left rotating in place
+        left_side_motor_power = -0.1;
+        right_side_motor_power = 0.1;
+      } else if (line.reflect->value[4] >= 1000) {
+        //Handling Left turns by rotating right in place
+        left_side_motor_power = 0.1;
+        right_side_motor_power = -0.1;
+      } else {
+        //Handling going straight and staying with the line
 
-
+        //Setting minimum and maximum speed values
+        if (left_side_motor_power > 0.15) {
+          left_side_motor_power = 0.15;
+        }
+        if (left_side_motor_power < 0.15) {
+          left_side_motor_power = -0.15;
+        }
+        if (right_side_motor_power > 0.15) {
+          right_side_motor_power = 0.15;
+        }
+        if (right_side_motor_power < 0.15) {
+          right_side_motor_power = -0.15;
+        }
+      }
 
       lf_set(motor.left_power, left_side_motor_power);
       lf_set(motor.right_power, right_side_motor_power);
