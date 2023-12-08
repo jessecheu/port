@@ -54,6 +54,9 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
   state button_press_time: int = 0
 
   //Driving Related
+  state pid_Kp: float = 1;
+  state pid_Ki: float = 1;
+  state pid_Kd: float = 1;
   state pid_previous_error: float = 0
 
   //Cargo Related 
@@ -185,9 +188,9 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
       float pid_integral_term_error = pid_integral_term_error + current_error; //equivalent to taking the integral of the error
       float pid_differential_term_error = pid_differential_term_error - self->pid_previous_error; //equivalent to taking the derivative of the error
 
-      float pid_proportional_term = pid_Kp * pid_proportional_term_error; 
-      float pid_integral_term = pid_Ki * pid_integral_term_error;         
-      float pid_differential_term = pid_Kd * pid_differential_term_error;
+      float pid_proportional_term = self->pid_Kp * pid_proportional_term_error; 
+      float pid_integral_term = self->pid_Ki * pid_integral_term_error;         
+      float pid_differential_term = self->pid_Kd * pid_differential_term_error;
 
       float pid_value = pid_proportional_term + pid_integral_term + pid_differential_term;
       self->pid_previous_error = error;
@@ -204,9 +207,13 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
       //Handling Turning
       if (line.reflect->value[0] >= 1000) {
         //Handling Right Turns by left rotating in place
+        lf_set(motor.left_power, 0);
+        lf_set(motor.right_power, 0);
         lf_set_mode(TURN_LEFT_MODE);
       } else if (line.reflect->value[4] >= 1000) {
         //Handling Left turns by rotating right in place
+        lf_set(motor.left_power, 0);
+        lf_set(motor.right_power, 0);
         lf_set_mode(TURN_RIGHT_MODE);
       } else {
         //Handling going straight and staying with the line
@@ -401,7 +408,7 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
       static char buf2[17];
       static char buf3[17];
       snprintf(buf0, 17, "EXTRA MODE");
-      snprintf(buf1, 17, " ");
+      snprintf(buf1, 17, "[A]: PID K Values");
       snprintf(buf2, 17, " ");
       snprintf(buf3, 17, "Main Menu: [C]");
       lf_set(disp.line0, buf0);
@@ -419,5 +426,29 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
       } 
     =}
   }
+
+  mode ADJUST_PID_VALUE_MODE { 
+    reaction(t) -> disp.line0, disp.line1, disp.line2, disp.line3 {=
+      static char buf0[17];
+      static char buf1[17];
+      static char buf2[17];
+      static char buf3[17];
+      snprintf(buf0, 17, "Prop. K: %f", self->pid_Kp);
+      snprintf(buf1, 17, "Integral K: %f", self->pid_Ki);
+      snprintf(buf2, 17, "Diff. K: %f", self->pid_Kd);
+      snprintf(buf3, 17, "Main Menu: [C]");
+      lf_set(disp.line0, buf0);
+      lf_set(disp.line1, buf1);
+      lf_set(disp.line2, buf2);
+      lf_set(disp.line3, buf3);
+    =}
+
+    reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MAIN_MENU_MODE{=
+      if (buttons.button_c->value) {
+        lf_set_mode(MAIN_MENU_MODE);
+      } 
+    =}
+  }
+
 
 }
