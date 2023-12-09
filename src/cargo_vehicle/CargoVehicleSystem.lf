@@ -55,11 +55,15 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
 
   //Driving Related
   state pid_Kp: float = 0.1;
-  state pid_Ki: float = 0.000;
+  state pid_Ki: float = 0.00005;
   state pid_Kd: float = 0.0005;
   state pid_previous_error: float = 0
 
   state distance_before_turn: float = 0
+
+  //Localization
+  state vehicle_distance_location: float = 0
+  state encoder_distance_at_finish: float = 0
 
   //Cargo Related 
   state moving_forward_step_timer: int = 0
@@ -155,6 +159,12 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
     =}
   }
 
+  mode START_LINE_MODE {
+    reaction(t) {= 
+    
+    =}
+  }
+
   mode DRIVE_MODE {
     reaction(line.reflect) gyro.z, angleToDistance.distance -> ARRIVED_STOP_MODE, TURN_LEFT_CORNER, TURN_RIGHT_CORNER, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {= 
       //Logic for driving
@@ -166,14 +176,35 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
 
       //Stops the Vehicle if the ARRIVAL STOP lines are detected
       uint32_t ARRIVAL_STOP_LOW_VALUE = 400;
+      uint32_t ARRIVAL_STOP_MAX_VALUE = 900;
       if (line.reflect->value[0] >= ARRIVAL_STOP_LOW_VALUE
           && line.reflect->value[1] >= ARRIVAL_STOP_LOW_VALUE
-          && line.reflect->value[2] >= ARRIVAL_STOP_LOW_VALUE
           && line.reflect->value[3] >= ARRIVAL_STOP_LOW_VALUE
-          && line.reflect->value[4] >= ARRIVAL_STOP_LOW_VALUE) {
+          && line.reflect->value[4] >= ARRIVAL_STOP_LOW_VALUE
+          && line.reflect->value[0] <= ARRIVAL_STOP_MAX_VALUE
+          && line.reflect->value[1] <= ARRIVAL_STOP_MAX_VALUE
+          && line.reflect->value[3] <= ARRIVAL_STOP_MAX_VALUE
+          && line.reflect->value[4] <= ARRIVAL_STOP_MAX_VALUE) {
             lf_set(motor.left_power, 0);
             lf_set(motor.right_power, 0);
             lf_set_mode(ARRIVED_STOP_MODE);
+      }
+
+      //Calculates the distance traveled by the vehicle
+      self->vehicle_distance_location = angleToDistance.distance->value - self->encoder_distance_at_finish;
+
+      //Checking if the vehicle drove over the start line.
+      uint32_t START_LINE_VALUE = 200;
+      uint32_t START_MAX_LINE_VALUE = 400;
+      if (line.reflect->value[0] >= START_LINE_VALUE
+          && line.reflect->value[1] >= START_LINE_VALUE
+          && line.reflect->value[3] >= START_LINE_VALUE
+          && line.reflect->value[4] >= START_LINE_VALUE
+          && line.reflect->value[0] < START_MAX_LINE_VALUE
+          && line.reflect->value[1] < START_MAX_LINE_VALUE
+          && line.reflect->value[3] < START_MAX_LINE_VALUE
+          && line.reflect->value[4] < START_MAX_LINE_VALUE) {
+          self->encoder_distance_at_finish = angleToDistance.distance->value; //resets the vehicle distance location
       }
 
       //Robot: Aim to keep the robot moving forward by 
@@ -235,7 +266,12 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
       }
       // }
 
-      snprintf(buf0, 17, "E:%f", current_error);
+      // snprintf(buf0, 17, "E:%f", current_error);
+      // snprintf(buf1, 17, "PID: %f", pid_value);
+      // snprintf(buf2, 17, "L: %f", left_side_motor_power);
+      // snprintf(buf3, 17, "R: %f", right_side_motor_power);
+
+      snprintf(buf0, 17, "POS: %f", self->vehicle_distance_location);
       snprintf(buf1, 17, "PID: %f", pid_value);
       snprintf(buf2, 17, "L: %f", left_side_motor_power);
       snprintf(buf3, 17, "R: %f", right_side_motor_power);
