@@ -79,8 +79,9 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
     lf_set(buttons.trigger, true);
   =}
 
-  reaction(encoder.left) -> angleToDistance.degrees {=
-    lf_set(angleToDistance.degrees, encoder.left->value);
+  reaction(encoder.left, encoder.right) -> angleToDistance.degrees {=
+    float encoder_avg = (encoder.left->value + encoder.right->value) / 2;
+    lf_set(angleToDistance.degrees, encoder_avg);
   =}
 
 
@@ -238,23 +239,9 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
       float left_side_motor_power = expected_motor_power - pid_value;
       float right_side_motor_power = expected_motor_power + pid_value;
 
-      // //Handling Turning
-      // if (line.reflect->value[0] >= 1000) {
-      //   //Handling Right Turns by left rotating in place
-      //   lf_set(motor.left_power, 0);
-      //   lf_set(motor.right_power, 0);
-      //   lf_set_mode(TURN_LEFT_CORNER);
-      // } else if (line.reflect->value[4] >= 1000) {
-      //   //Handling Left turns by rotating right in place
-      //   lf_set(motor.left_power, 0);
-      //   lf_set(motor.right_power, 0);
-      //   lf_set_mode(TURN_RIGHT_CORNER);
-      // } else {
-      //Handling going straight and staying with the line
-
       //Setting minimum and maximum speed values
-      float max_motor_speed = 0.20;
-      float min_motor_speed = -0.20;
+      float max_motor_speed = 0.30;
+      float min_motor_speed = -0.30;
 
       if (left_side_motor_power > max_motor_speed) {
         left_side_motor_power = max_motor_speed;
@@ -268,13 +255,8 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
       if (right_side_motor_power < min_motor_speed) {
         right_side_motor_power = min_motor_speed;
       }
-      // }
 
       // snprintf(buf0, 17, "E:%f", current_error);
-      // snprintf(buf1, 17, "PID: %f", pid_value);
-      // snprintf(buf2, 17, "L: %f", left_side_motor_power);
-      // snprintf(buf3, 17, "R: %f", right_side_motor_power);
-
       snprintf(buf0, 17, "POS: %f", self->vehicle_distance_location);
       snprintf(buf1, 17, "PID: %f", pid_value);
       snprintf(buf2, 17, "L: %f", left_side_motor_power);
