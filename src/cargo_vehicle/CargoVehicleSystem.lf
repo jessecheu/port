@@ -27,7 +27,7 @@ reactor AngleToDistance {
 
 }
 
-main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
+main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
   preamble {=
 
   =}
@@ -42,7 +42,7 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
 
 
   timer t(0, sample_period)
-  timer trigger_time(0, 150 ms);
+  timer trigger_time(0, 50 ms);
   timer seconds(0, 1 s)
   
   //Calibration Related
@@ -54,9 +54,9 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
   state button_press_time: int = 0
 
   //Driving Related
-  state pid_Kp: float = 1;
-  state pid_Ki: float = 1;
-  state pid_Kd: float = 1;
+  state pid_Kp: float = 0.1;
+  state pid_Ki: float = 0.000;
+  state pid_Kd: float = 0.0005;
   state pid_previous_error: float = 0
 
   state distance_before_turn: float = 0
@@ -180,13 +180,11 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
       //using the center line sensor which is line[2] and PID Control
 
       //Driving Related - PID Controller Variable Declarations
-      float expected_value = 800; //expected line sensor[2] value we want 
-      float current_value = line.reflect->value[2]; //based on the line sensor[2]
-      float current_error = expected_value - current_value;  //Expected Sensor value - current Sensor value. 
+      float expected_value = 0; //expected difference that we want 
+      // float current_value = line.reflect->value[3] - line.reflect->value[1]; //using the difference between the center line sensors
+      float current_value = (line.reflect->value[4] + line.reflect->value[3]) - (line.reflect->value[1] + line.reflect->value[0]); //using the difference between the center line sensors
 
-      float pid_Kp = 0.1;
-      float pid_Ki = 0.0000;
-      float pid_Kd = 0.0000;
+      float current_error = (expected_value - current_value) / 1000;  //Expected Sensor value - current Sensor value. 
 
       float pid_proportional_term_error = current_error; 
       float pid_integral_term_error = (pid_integral_term_error * 0.15) + current_error; //equivalent to taking the integral of the error
@@ -199,10 +197,10 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
       float pid_value = pid_proportional_term + pid_integral_term + pid_differential_term;
       self->pid_previous_error = current_error;
 
-      float expected_motor_power = 0.10; //when there is no error. motor values for it to go straight
+      float expected_motor_power = 0.075; //when there is no error. motor values for it to go straight
 
       //Adjusting the Motor powers based on the PID values
-      float left_side_motor_power = expected_motor_power + pid_value;
+      float left_side_motor_power = expected_motor_power - pid_value;
       float right_side_motor_power = expected_motor_power + pid_value;
 
       // //Handling Turning
@@ -220,8 +218,8 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
       //Handling going straight and staying with the line
 
       //Setting minimum and maximum speed values
-      float max_motor_speed = 0.10;
-      float min_motor_speed = -0.10;
+      float max_motor_speed = 0.20;
+      float min_motor_speed = -0.20;
 
       if (left_side_motor_power > max_motor_speed) {
         left_side_motor_power = max_motor_speed;
@@ -237,10 +235,10 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
       }
       // }
 
-      snprintf(buf0, 17, "2:%4d", line.reflect->value[2]);
-      snprintf(buf1, 17, "P: %4f , I: %4f, D: %4f", pid_proportional_term, pid_integral_term, pid_differential_term);
-      snprintf(buf2, 17, "L: %2f, R: %2f", left_side_motor_power, right_side_motor_power);
-      snprintf(buf3, 17, "PID: %f", pid_value);
+      snprintf(buf0, 17, "E:%f", current_error);
+      snprintf(buf1, 17, "PID: %f", pid_value);
+      snprintf(buf2, 17, "L: %f", left_side_motor_power);
+      snprintf(buf3, 17, "R: %f", right_side_motor_power);
 
       lf_set(motor.left_power, left_side_motor_power);
       lf_set(motor.right_power, right_side_motor_power);
