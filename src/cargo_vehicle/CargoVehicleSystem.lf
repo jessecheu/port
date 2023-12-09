@@ -27,7 +27,7 @@ reactor AngleToDistance {
 
 }
 
-main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
+main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
   preamble {=
 
   =}
@@ -42,7 +42,8 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
 
 
   timer t(0, sample_period)
-  timer trigger_time(0, 50 ms);
+  timer trigger_time(0, 25 ms);
+  timer button_trigger_time(0, 150ms);
   timer seconds(0, 1 s)
   
   //Calibration Related
@@ -54,9 +55,9 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
   state button_press_time: int = 0
 
   //Driving Related
-  state pid_Kp: float = 0.1;
-  state pid_Ki: float = 0.00005;
-  state pid_Kd: float = 0.0005;
+  state pid_Kp: float = 0.133;
+  state pid_Ki: float = 0.00010;
+  state pid_Kd: float = 0.0010;
   state pid_previous_error: float = 0
 
   state distance_before_turn: float = 0
@@ -68,11 +69,14 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
   //Cargo Related 
   state moving_forward_step_timer: int = 0
 
-  reaction(trigger_time) -> line.trigger, buttons.trigger, gyro.trigger, encoder.trigger {=
+  reaction(trigger_time) -> line.trigger, gyro.trigger, encoder.trigger {=
     lf_set(line.trigger, true);
-    lf_set(buttons.trigger, true);
     lf_set(gyro.trigger, true);
     lf_set(encoder.trigger, true);
+  =}
+
+  reaction(button_trigger_time) -> buttons.trigger {=
+    lf_set(buttons.trigger, true);
   =}
 
   reaction(encoder.left) -> angleToDistance.degrees {=
@@ -355,16 +359,21 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
     =}
 
     //Checking buttons
-    reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MAIN_MENU_MODE, motor.left_power, motor.right_power {=
+    reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MAIN_MENU_MODE, PID_VALUE_MODE, motor.left_power, motor.right_power {=
+    
       if (buttons.button_c->value) {
         lf_set(motor.left_power, 0);
         lf_set(motor.right_power, 0);
         lf_set_mode(MAIN_MENU_MODE);
+      } else if (buttons.button_a->value) {
+        lf_set(motor.left_power, 0);
+        lf_set(motor.right_power, 0);
+        lf_set_mode(PID_VALUE_MODE);
       } 
     =}
   }
 
-  mode ADJUST_PID_VALUE_MODE { 
+  mode PID_VALUE_MODE { 
     reaction(t) -> disp.line0, disp.line1, disp.line2, disp.line3 {=
       static char buf0[17];
       static char buf1[17];
