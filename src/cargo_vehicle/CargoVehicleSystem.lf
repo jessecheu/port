@@ -27,7 +27,7 @@ reactor AngleToDistance {
 
 }
 
-main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
+main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
   preamble {=
 
   =}
@@ -55,7 +55,7 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
 
   //Driving Related
   state pid_Kp: float = 0.1;
-  state pid_Ki: float = 0.001;
+  state pid_Ki: float = 0.000;
   state pid_Kd: float = 0.0005;
   state pid_previous_error: float = 0
 
@@ -181,7 +181,9 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
 
       //Driving Related - PID Controller Variable Declarations
       float expected_value = 0; //expected difference that we want 
-      float current_value = (line.reflect->value[3] - line.reflect->value[1]); //using the difference between the center line sensors
+      // float current_value = line.reflect->value[3] - line.reflect->value[1]; //using the difference between the center line sensors
+      float current_value = (line.reflect->value[4] + line.reflect->value[3]) - (line.reflect->value[1] + line.reflect->value[0]); //using the difference between the center line sensors
+
       float current_error = (expected_value - current_value) / 1000;  //Expected Sensor value - current Sensor value. 
 
       float pid_proportional_term_error = current_error; 
