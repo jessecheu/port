@@ -10,8 +10,8 @@
     threading: false,
   }
 
-  import Display from "lib/Display.lf"
-  import Buttons from "lib/Buttons.lf"
+  import Display from "../lib/Display.lf"
+  import Buttons from "../lib/Buttons.lf"
 
   preamble {=
     //#include <pololu_3pi_2040_robot.h>

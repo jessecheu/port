@@ -1,6 +1,5 @@
 /**
- * Line detection on Pololu 3pi+ 2040 Robot using a taped black line on the ground
- * Tests the five line sensors on the robot.
+ * Testing the Gyro on Pololu 3pi+ 2040 Robot 
  *
  */
  target C {
@@ -11,40 +10,32 @@
     threading: false,
   }
   
-  import Line from "lib/Line.lf"
-  import Display from "lib/Display.lf"
+  import Display from "../lib/Display.lf"
+  import GyroAngle from "../lib/IMU.lf"
+  import Encoders from "../lib/Encoders.lf"
   
   main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
-    line = new Line()
     disp = new Display()
+    gyro = new GyroAngle();
   
     timer t(0, sample_period)
     // Timer used to display seconds.
     timer seconds(0, 1 s)
-    timer end_calibration(calibration_time)
-    state count: int = 0
   
-    reaction(startup) -> disp.line0, disp.line1, disp.line2 {=
-      lf_set(disp.line0, "CALIBRATING");
-      lf_set(disp.line1, "Roll robot over");
-      lf_set(disp.line2, "light and dark.");
-    =}
+
   
     // reaction(seconds) -> disp.line3 {=
     //   static char buf[17];
     //   snprintf(buf, 17, "time:%8d s", self->count++);
     //   lf_set(disp.line3, buf);
     // =}
+
   
-    reaction(end_calibration) -> line.calibrate {=
-      lf_set(line.calibrate, false);
+    reaction(t) -> gyro.trigger {=
+      lf_set(gyro.trigger, true);
     =}
   
-    reaction(t) -> line.trigger {=
-      lf_set(line.trigger, true);
-    =}
-  
-    reaction(line.reflect) -> disp.line0, disp.line1, disp.line2, disp.line3 {=
+    reaction(gyro.x, gyro.y, gyro.z) -> disp.line0, disp.line1, disp.line2, disp.line3 {=
       static char buf0[17];
       static char buf1[17];
       static char buf2[17];
@@ -64,14 +55,12 @@
       // } else { 
       //   snprintf(buf2, 17, "[4]=%d", line.reflect->value[3], line.reflect->value[4]);
       // }
-      snprintf(buf0, 17, "[0]=%d", line.reflect->value[0]);
-      snprintf(buf1, 17, "[1]=%d", line.reflect->value[1]);
-      snprintf(buf2, 17, "2=%d,3=%d", line.reflect->value[2], line.reflect->value[3]);
-      snprintf(buf3, 17, "[4]=%d", line.reflect->value[4]);
+      snprintf(buf0, 17, "[x]=%.1f", gyro.x->value);
+      snprintf(buf1, 17, "[y]=%.1f", gyro.y->value);
+      snprintf(buf2, 17, "[z]=%.1f", gyro.z->value);
       lf_set(disp.line0, buf0);
       lf_set(disp.line1, buf1);
       lf_set(disp.line2, buf2);
-      lf_set(disp.line3, buf3);
     =}
   }
   
