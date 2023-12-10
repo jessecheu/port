@@ -12,11 +12,11 @@
     threading: false,
   }
   
-  import Line from "lib/Line.lf"
-  import Display from "lib/Display.lf"
-  import Motors from "lib/Motors.lf"
-  import GyroAngle from "lib/IMU.lf"
-  import Encoders from "lib/Encoders.lf"
+  import Line from "../lib/Line.lf"
+  import Display from "../lib/Display.lf"
+  import Motors from "../lib/Motors.lf"
+  import GyroAngle from "../lib/IMU.lf"
+  import Encoders from "../lib/Encoders.lf"
   
   main reactor(calibration_time: time = 10 s, sample_period: time = 100 ms) {
     line = new Line()

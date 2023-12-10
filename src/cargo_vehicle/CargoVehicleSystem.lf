@@ -27,7 +27,7 @@ reactor AngleToDistance {
 
 }
 
-main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
+main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
   preamble {=
 
   =}
@@ -42,7 +42,8 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
 
 
   timer t(0, sample_period)
-  timer trigger_time(0, 50 ms);
+  timer trigger_time(0, 25 ms);
+  timer button_trigger_time(0, 150ms);
   timer seconds(0, 1 s)
   
   //Calibration Related
@@ -54,25 +55,40 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
   state button_press_time: int = 0
 
   //Driving Related
-  state pid_Kp: float = 0.1;
-  state pid_Ki: float = 0.000;
-  state pid_Kd: float = 0.0005;
+  state pid_Kp: float = 0.133;
+  state pid_Ki: float = 0.00010;
+  state pid_Kd: float = 0.0010;
   state pid_previous_error: float = 0
 
   state distance_before_turn: float = 0
 
+  //Localization
+  state vehicle_distance_location: float = 0
+  state encoder_distance_at_finish: float = 0
+
+  state vehicle_location_area_count: int = 0
+  state loc_area_count_debouncer_time: int = 0 //needed to debounce so that the conut is only increased one time
+  state vehicle_car_ID: int = 0
+
+  state second_vehicle_location_area_count: int = 0
+
+
   //Cargo Related 
   state moving_forward_step_timer: int = 0
 
-  reaction(trigger_time) -> line.trigger, buttons.trigger, gyro.trigger, encoder.trigger {=
+  reaction(trigger_time) -> line.trigger, gyro.trigger, encoder.trigger {=
     lf_set(line.trigger, true);
-    lf_set(buttons.trigger, true);
     lf_set(gyro.trigger, true);
     lf_set(encoder.trigger, true);
   =}
 
-  reaction(encoder.left) -> angleToDistance.degrees {=
-    lf_set(angleToDistance.degrees, encoder.left->value);
+  reaction(button_trigger_time) -> buttons.trigger {=
+    lf_set(buttons.trigger, true);
+  =}
+
+  reaction(encoder.left, encoder.right) -> angleToDistance.degrees {=
+    float encoder_avg = (encoder.left->value + encoder.right->value) / 2;
+    lf_set(angleToDistance.degrees, encoder_avg);
   =}
 
 
@@ -156,7 +172,7 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
   }
 
   mode DRIVE_MODE {
-    reaction(line.reflect) gyro.z, angleToDistance.distance -> ARRIVED_STOP_MODE, TURN_LEFT_CORNER, TURN_RIGHT_CORNER, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {= 
+    reaction(trigger_time, line.reflect) gyro.z, angleToDistance.distance -> ARRIVED_STOP_MODE, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {= 
       //Logic for driving
       //Printing to the LED Screen
       static char buf0[17];
@@ -166,14 +182,50 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
 
       //Stops the Vehicle if the ARRIVAL STOP lines are detected
       uint32_t ARRIVAL_STOP_LOW_VALUE = 400;
+      uint32_t ARRIVAL_STOP_MAX_VALUE = 900;
       if (line.reflect->value[0] >= ARRIVAL_STOP_LOW_VALUE
           && line.reflect->value[1] >= ARRIVAL_STOP_LOW_VALUE
-          && line.reflect->value[2] >= ARRIVAL_STOP_LOW_VALUE
           && line.reflect->value[3] >= ARRIVAL_STOP_LOW_VALUE
-          && line.reflect->value[4] >= ARRIVAL_STOP_LOW_VALUE) {
+          && line.reflect->value[4] >= ARRIVAL_STOP_LOW_VALUE
+          && line.reflect->value[0] <= ARRIVAL_STOP_MAX_VALUE
+          && line.reflect->value[1] <= ARRIVAL_STOP_MAX_VALUE
+          && line.reflect->value[3] <= ARRIVAL_STOP_MAX_VALUE
+          && line.reflect->value[4] <= ARRIVAL_STOP_MAX_VALUE) {
             lf_set(motor.left_power, 0);
             lf_set(motor.right_power, 0);
             lf_set_mode(ARRIVED_STOP_MODE);
+      }
+
+      //Calculates the distance traveled by the vehicle
+      self->vehicle_distance_location = angleToDistance.distance->value;
+
+      //Debouncing the location area count so that it doesn't count more than once within 100 ms.
+      if (self->loc_area_count_debouncer_time != 0 && self->loc_area_count_debouncer_time == 4) {
+        self->loc_area_count_debouncer_time = 0; //resets to zero when 100 ms has passed. 
+      } else (elf->loc_area_count_debouncer_time != 0) {
+        self->loc_area_count_debouncer_time = self->loc_area_count_debouncer_time + 1; //triggering each unit time. each 1 unit is = trigger.time interval
+      }
+
+      //Checking if the vehicle drove over the start line.
+      uint32_t START_LINE_VALUE = 200;
+      uint32_t START_MAX_LINE_VALUE = 400;
+      if (line.reflect->value[0] >= START_LINE_VALUE
+          && line.reflect->value[1] >= START_LINE_VALUE
+          && line.reflect->value[3] >= START_LINE_VALUE
+          && line.reflect->value[4] >= START_LINE_VALUE
+          && line.reflect->value[0] < START_MAX_LINE_VALUE
+          && line.reflect->value[1] < START_MAX_LINE_VALUE
+          && line.reflect->value[3] < START_MAX_LINE_VALUE
+          && line.reflect->value[4] < START_MAX_LINE_VALUE
+          && self->loc_area_count_debouncer_time == 0) {
+          // self->encoder_distance_at_finish = angleToDistance.distance->value; //resets the vehicle distance location
+          self->vehicle_location_area_count = self->vehicle_location_area_count + 1; //resets the vehicle distance location
+      }
+
+      //Handles Localization so that the vehicles don't come near each other
+      //Pushes a car to standby mode if the vehicles come close to each other
+      if (self->vehicle_location_area_count) { 
+
       }
 
       //Robot: Aim to keep the robot moving forward by 
@@ -194,6 +246,12 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
       float pid_integral_term = self->pid_Ki * pid_integral_term_error;         
       float pid_differential_term = self->pid_Kd * pid_differential_term_error;
 
+      //Using CLEGG Integrator to handle the integral windup 
+      //Resets the pid_integral_term_error to zero to avoid overshooting 
+      if (current_error == 0) { 
+        pid_integral_term_error == 0;
+      }
+
       float pid_value = pid_proportional_term + pid_integral_term + pid_differential_term;
       self->pid_previous_error = current_error;
 
@@ -203,23 +261,9 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
       float left_side_motor_power = expected_motor_power - pid_value;
       float right_side_motor_power = expected_motor_power + pid_value;
 
-      // //Handling Turning
-      // if (line.reflect->value[0] >= 1000) {
-      //   //Handling Right Turns by left rotating in place
-      //   lf_set(motor.left_power, 0);
-      //   lf_set(motor.right_power, 0);
-      //   lf_set_mode(TURN_LEFT_CORNER);
-      // } else if (line.reflect->value[4] >= 1000) {
-      //   //Handling Left turns by rotating right in place
-      //   lf_set(motor.left_power, 0);
-      //   lf_set(motor.right_power, 0);
-      //   lf_set_mode(TURN_RIGHT_CORNER);
-      // } else {
-      //Handling going straight and staying with the line
-
       //Setting minimum and maximum speed values
-      float max_motor_speed = 0.20;
-      float min_motor_speed = -0.20;
+      float max_motor_speed = 0.30;
+      float min_motor_speed = -0.30;
 
       if (left_side_motor_power > max_motor_speed) {
         left_side_motor_power = max_motor_speed;
@@ -233,12 +277,12 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
       if (right_side_motor_power < min_motor_speed) {
         right_side_motor_power = min_motor_speed;
       }
-      // }
 
-      snprintf(buf0, 17, "E:%f", current_error);
+      // snprintf(buf0, 17, "E:%f", current_error);
+      snprintf(buf0, 17, "POS: %f", self->vehicle_distance_location);
       snprintf(buf1, 17, "PID: %f", pid_value);
-      snprintf(buf2, 17, "L: %f", left_side_motor_power);
-      snprintf(buf3, 17, "R: %f", right_side_motor_power);
+      snprintf(buf2, 17, "Loc: %i", self->vehicle_location_area_count % 6);
+      snprintf(buf3, 17, "Main Menu [C]: ");
 
       lf_set(motor.left_power, left_side_motor_power);
       lf_set(motor.right_power, right_side_motor_power);
@@ -257,112 +301,16 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
     =}
   }
 
-  mode TURN_RIGHT_CORNER { 
-      
-    //Use gyro to check if the turn has been made completely before changing to DRIVE mode again
-    reaction(t) gyro.z, angleToDistance.distance -> DRIVE_MODE, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {=
-      static char buf0[17];
-      static char buf1[17];
-      static char buf2[17];
-      static char buf3[17];
-      //gyro.z = -90, angle_before_turn = -10, result = -80
-
-      snprintf(buf0, 17, "TURN RIGHT");
-      snprintf(buf1, 17, " ");
-      snprintf(buf2, 17, "a_b_t: %f", self->angle_before_turn);
-      snprintf(buf3, 17, "gyro.z value %f", gyro.z->value);
-
-      //After the RIGHT_TURN is detected, we drive a little more and then rotate in place.
-      if (abs((angleToDistance.distance->value) - (self->distance_before_turn)) <= 1) {
-        //DRIVE until the distance is greater than or equal to 4
-        lf_set(motor.left_power, 0.075f);
-        lf_set(motor.right_power, 0.075f);
-        snprintf(buf1, 17, "Ds=%f", (angleToDistance.distance->value) - (self->distance_before_turn));
-        lf_set(disp.line3, "Driving before Turning");
+  mode DRIVE_STANDBY_MODE {
+    reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MAIN_MENU_MODE, motor.left_power, motor.right_power {=
+      if (buttons.button_c->value) {
+        lf_set(motor.left_power, 0);
+        lf_set(motor.right_power, 0);
+        lf_set_mode(MAIN_MENU_MODE);
       } 
-      else { 
-        lf_set(motor.left_power, 0.0f);
-        lf_set(motor.right_power, 0.0f);
-        //Rotate
-        snprintf(buf1, 17, "Dr=%f", (angleToDistance.distance->value) - (self->distance_before_turn));
-        if (abs(gyro.z->value - self->angle_before_turn) >= 80) {
-          lf_set(motor.left_power, 0.075);
-          lf_set(motor.right_power, 0.075);
-          lf_set(disp.line3, " ");
-          lf_set_mode(DRIVE_MODE);
-        } else {
-          lf_set(motor.left_power, 0.075f);
-          lf_set(motor.right_power, -0.075f);
-        }
-
-      }
-      lf_set(disp.line0, buf0);
-      lf_set(disp.line1, buf1);
-      lf_set(disp.line2, buf2);
-      lf_set(disp.line3, buf3);
     =}
-
-  reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MAIN_MENU_MODE, motor.left_power, motor.right_power {=
-    if (buttons.button_c->value) {
-      lf_set(motor.left_power, 0);
-      lf_set(motor.right_power, 0);
-      lf_set_mode(MAIN_MENU_MODE);
-    } 
-  =}
   }
 
-  mode TURN_LEFT_CORNER { 
-    //Use gyro to check if the turn has been made completely before changing to DRIVE mode again
-
-    reaction(t) gyro.z, angleToDistance.distance -> DRIVE_MODE, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {=
-      static char buf0[17];
-      static char buf1[17];
-      static char buf2[17];
-      static char buf3[17];
-      //gyro.z = -90, angle_before_turn = -10, result = -80
-
-      snprintf(buf0, 17, "TURN LEFT");
-      snprintf(buf1, 17, " ");
-      snprintf(buf2, 17, "a_b_t: %f", self->angle_before_turn);
-      snprintf(buf3, 17, "gyro.z value %f", gyro.z->value);
-
-      //After the RIGHT_LEFT is detected, we drive a little more and then rotate in place.
-      if (abs((angleToDistance.distance->value) - (self->distance_before_turn)) <= 1.5) {
-        //DRIVE until the distance is greater than or equal to 4
-        lf_set(motor.left_power, 0.075);
-        lf_set(motor.right_power, 0.075);
-        snprintf(buf1, 17, "Ds=%f", (angleToDistance.distance->value) - (self->distance_before_turn));
-        lf_set(disp.line3, "Driving before Turning");
-      } 
-      else { 
-        //Rotate
-        snprintf(buf1, 17, "Dr=%f", (angleToDistance.distance->value) - (self->distance_before_turn));
-        if (abs(gyro.z->value - self->angle_before_turn) >= 80) {
-          lf_set(motor.left_power, 0.075);
-          lf_set(motor.right_power, 0.075);
-          lf_set(disp.line3, " ");
-          lf_set_mode(DRIVE_MODE);
-        } else {
-          lf_set(motor.left_power, -0.10f);
-          lf_set(motor.right_power, 0.10f);
-        }
-
-      }
-
-      lf_set(disp.line0, buf0);
-      lf_set(disp.line1, buf1);
-      lf_set(disp.line2, buf2);
-      lf_set(disp.line3, buf3);
-    =}
-
-  reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MAIN_MENU_MODE, motor.left_power, motor.right_power {=
-    if (buttons.button_c->value) {
-      lf_set(motor.left_power, 0);
-      lf_set(motor.right_power, 0);
-      lf_set_mode(MAIN_MENU_MODE);
-    } 
-  =}
-  }
 
   mode ARRIVED_STOP_MODE {
     //Temporarily pauses the vehicle. Entered by the DRIVE mode.
@@ -425,16 +373,21 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 50 ms) {
     =}
 
     //Checking buttons
-    reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MAIN_MENU_MODE, motor.left_power, motor.right_power {=
+    reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MAIN_MENU_MODE, PID_VALUE_MODE, motor.left_power, motor.right_power {=
+    
       if (buttons.button_c->value) {
         lf_set(motor.left_power, 0);
         lf_set(motor.right_power, 0);
         lf_set_mode(MAIN_MENU_MODE);
+      } else if (buttons.button_a->value) {
+        lf_set(motor.left_power, 0);
+        lf_set(motor.right_power, 0);
+        lf_set_mode(PID_VALUE_MODE);
       } 
     =}
   }
 
-  mode ADJUST_PID_VALUE_MODE { 
+  mode PID_VALUE_MODE { 
     reaction(t) -> disp.line0, disp.line1, disp.line2, disp.line3 {=
       static char buf0[17];
       static char buf1[17];
