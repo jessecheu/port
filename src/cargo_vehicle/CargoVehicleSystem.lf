@@ -66,6 +66,12 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
   state vehicle_distance_location: float = 0
   state encoder_distance_at_finish: float = 0
 
+  state vehicle_location_area_count: float = 0
+  state vehicle_car_ID: float = 0
+
+  state second_vehicle_location_area_count: float = 0
+
+
   //Cargo Related 
   state moving_forward_step_timer: int = 0
 
@@ -164,12 +170,6 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
     =}
   }
 
-  mode START_LINE_MODE {
-    reaction(t) {= 
-    
-    =}
-  }
-
   mode DRIVE_MODE {
     reaction(line.reflect) gyro.z, angleToDistance.distance -> ARRIVED_STOP_MODE, motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2, disp.line3 {= 
       //Logic for driving
@@ -196,7 +196,8 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
       }
 
       //Calculates the distance traveled by the vehicle
-      self->vehicle_distance_location = angleToDistance.distance->value - self->encoder_distance_at_finish;
+      // self->vehicle_distance_location = angleToDistance.distance->value - self->encoder_distance_at_finish;
+      self->vehicle_distance_location = angleToDistance.distance->value;
 
       //Checking if the vehicle drove over the start line.
       uint32_t START_LINE_VALUE = 200;
@@ -209,8 +210,15 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
           && line.reflect->value[1] < START_MAX_LINE_VALUE
           && line.reflect->value[3] < START_MAX_LINE_VALUE
           && line.reflect->value[4] < START_MAX_LINE_VALUE) {
-          self->encoder_distance_at_finish = angleToDistance.distance->value; //resets the vehicle distance location
+          // self->encoder_distance_at_finish = angleToDistance.distance->value; //resets the vehicle distance location
+          self->vehicle_location_area_count = self->vehicle_location_area_count + 1; //resets the vehicle distance location
       }
+
+      //Handles Localization so that the vehicles don't come near each other
+      //Pushes a car to standby mode if the vehicles come close to each other
+      // if (self->vehicle_location_area_count) { 
+
+      // }
 
       //Robot: Aim to keep the robot moving forward by 
       //using the center line sensor which is line[2] and PID Control
@@ -229,6 +237,12 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
       float pid_proportional_term = self->pid_Kp * pid_proportional_term_error; 
       float pid_integral_term = self->pid_Ki * pid_integral_term_error;         
       float pid_differential_term = self->pid_Kd * pid_differential_term_error;
+
+      //Using CLEGG Integrator to handle the integral windup 
+      //Resets the pid_integral_term_error to zero to avoid overshooting 
+      if (current_error == 0) { 
+        pid_integral_term_error == 0;
+      }
 
       float pid_value = pid_proportional_term + pid_integral_term + pid_differential_term;
       self->pid_previous_error = current_error;
@@ -270,6 +284,16 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
       lf_set(disp.line3, buf3);
     =} 
 
+    reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MAIN_MENU_MODE, motor.left_power, motor.right_power {=
+      if (buttons.button_c->value) {
+        lf_set(motor.left_power, 0);
+        lf_set(motor.right_power, 0);
+        lf_set_mode(MAIN_MENU_MODE);
+      } 
+    =}
+  }
+
+  mode DRIVE_STANDBY_MODE {
     reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MAIN_MENU_MODE, motor.left_power, motor.right_power {=
       if (buttons.button_c->value) {
         lf_set(motor.left_power, 0);
