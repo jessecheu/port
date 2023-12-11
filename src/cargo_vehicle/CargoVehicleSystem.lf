@@ -86,7 +86,7 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
     //Debouncing so that a pass isn't counted multiple times. 
 
     //Debouncing the location area count so that it doesn't count more than once within 50 * 25 ms.
-    if (self->loc_area_count_debouncer_time != 0 && self->loc_area_count_debouncer_time >= 50) {
+    if (self->loc_area_count_debouncer_time != 0 && self->loc_area_count_debouncer_time >= 32) {
       self->loc_area_count_debouncer_time = 0; //resets to zero when 200 ms has passed. 
     } else if (self->loc_area_count_debouncer_time != 0) {
       self->loc_area_count_debouncer_time = self->loc_area_count_debouncer_time + 1; //triggering each unit time. each 1 unit is = trigger.time interval
@@ -214,7 +214,7 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
       
 
       //Checking if the vehicle drove over the green line. 
-      uint32_t START_LINE_VALUE = 200;
+      uint32_t START_LINE_VALUE = 150;
       uint32_t START_MAX_LINE_VALUE = 400;
       if (line.reflect->value[0] >= START_LINE_VALUE
           && line.reflect->value[1] >= START_LINE_VALUE
@@ -234,22 +234,22 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
       //Pushes a car to standby mode if the vehicles come close to each other
       //Localization Logic to count this area the vehicle is in.
       //Logic if the vehicle is with a ID of 0. ID = 0 means the vehicle is the first car.
-      // if ( ((self->vehicle_location_area_count % 6) - self->second_vehicle_location_area_count) <= 1 && self->vehicle_car_id == 0) { 
-      //   //Checks and makes sure that the two vehicles are never in the same area. 
-      //   //If the two vehicles are in the same area, the second vehicle starts.
-      //   lf_set(motor.left_power, 0);
-      //   lf_set(motor.right_power, 0);
-      //   lf_set_mode(DRIVE_STANDBY_MODE); 
-      // }
+      if ( ((self->vehicle_location_area_count % 6) - self->second_vehicle_location_area_count) <= 1 && self->vehicle_car_id == 0) { 
+        //Checks and makes sure that the two vehicles are never in the same area. 
+        //If the two vehicles are in the same area, the second vehicle starts.
+        lf_set(motor.left_power, 0);
+        lf_set(motor.right_power, 0);
+        lf_set_mode(DRIVE_STANDBY_MODE); 
+      }
 
-      // //Logic if the vehicle is with a ID of 1. ID = 1 means the vehicle is the second car.
-      // if ( ((self->vehicle_location_area_count % 6) - self->second_vehicle_location_area_count) <= 1 && self->vehicle_car_id == 1) { 
-      //   //Checks and makes sure that the two vehicles are never in the same area. 
-      //   //If the two vehicles are in the same area, the second vehicle starts.
-      //   lf_set(motor.left_power, 0);
-      //   lf_set(motor.right_power, 0);
-      //   lf_set_mode(DRIVE_STANDBY_MODE); 
-      // }
+      //Logic if the vehicle is with a ID of 1. ID = 1 means the vehicle is the second car.
+      if ( ((self->vehicle_location_area_count % 6) - self->second_vehicle_location_area_count) <= 1 && self->vehicle_car_id == 1) { 
+        //Checks and makes sure that the two vehicles are never in the same area. 
+        //If the two vehicles are in the same area, the second vehicle starts.
+        lf_set(motor.left_power, 0);
+        lf_set(motor.right_power, 0);
+        lf_set_mode(DRIVE_STANDBY_MODE); 
+      }
 
       //Robot: Aim to keep the robot moving forward by 
       //using the center line sensor which is line[2] and PID Control
