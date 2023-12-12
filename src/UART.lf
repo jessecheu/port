@@ -87,7 +87,7 @@
     reaction(buttons.button_a) {=
      if(buttons.button_a->value) {
       printf("Sending data over the UART.\n");
-      uart_putc_raw(UART_ID, 'D');
+      uart_putc_raw(UART_ID, 'L');
      }
       
     =}
