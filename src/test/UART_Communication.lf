@@ -1,76 +1,58 @@
 /**
   * UART 
   * Source: https://github.com/raspberrypi/pico-examples/blob/master/uart/hello_uart/hello_uart.c
+  * //https://www.raspberrypi.com/documentation/pico-sdk/hardware.html#uart_example 
+  * //https://github.com/raspberrypi/pico-examples/blob/master/uart/uart_advanced/uart_advanced.c 
  */
  target C {
-    platform: {
-      name: "rp2040",
-      board: "pololu_3pi_2040_robot"
-    },
-    threading: false,
-  }
+  platform: {
+    name: "rp2040",
+    board: "pololu_3pi_2040_robot"
+  },
+  threading: false,
+}
+import Buttons from "../lib/Buttons.lf"
+preamble {=
+  //..
+=}
 
+main reactor {
   preamble {=
-    //..
-  =}
-  
-  main reactor {
-    preamble {=
-      #include <stdio.h>
-      #include "pico/stdlib.h"
-      #include "hardware/uart.h"
+    #include <stdio.h>
+    #include "pico/stdlib.h"
+    #include "hardware/uart.h"
+    #include "hardware/irq.h"
 
 
-      /// \tag::hello_uart[]
+    /// \tag::hello_uart[]
 
-      #define UART_ID uart0
-      #define BAUD_RATE 115200
+    #define UART_ID uart0
+    #define BAUD_RATE 115200
 
-      // We are using pins 0 and 1, but see the GPIO function select table in the
-      // datasheet for information on which other pins can be used.
-      #define UART_TX_PIN 0
-      #define UART_RX_PIN 1
-    =}
-    
-    timer t(0, 1s)
+    // We are using pins 0 and 1, but see the GPIO function select table in the
+    // datasheet for information on which other pins can be used.
+    #define UART_TX_PIN 28
+    #define UART_RX_PIN 29
 
-    reaction (startup) {=
-      printf("Setting up the UART with the BAUD Rate.\n");
-      // Set up our UART with the required speed.
-      uart_init(UART_ID, BAUD_RATE);
+    #define DATA_BITS 8
+    #define STOP_BITS 1
+    #define PARITY    UART_PARITY_NONE
 
-      // Set the TX and RX pins by using the function select on the GPIO
-      // Set datasheet for more information on function select
-      printf("Setting up the UART GPIO Pins");
-      gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
-      gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
-    =}
+    static int chars_rxed = 0;
 
-    reaction (t) {=
-        printf("Sending data over the UART.\n");
-        // Use some the various UART functions to send out data
-        // In a default system, printf will also output via the default UART
-
-        // Send out a character without any conversions
-        uart_putc_raw(UART_ID, 'A');
-
-        // Send out a character but do CR/LF conversions
-        uart_putc(UART_ID, 'B');
-
-        // Send out a string, with CR/LF conversions
-        uart_puts(UART_ID, " Hello, UART!\n");
-
-        static char buf[32];
-        size_t len = 1;
-        static char buf1;
-
-        //https://www.raspberrypi.com/documentation/pico-sdk/hardware.html#uart_example 
-        //uart_putc(UART_ID, buf1);
-        if (uart_is_readable(UART_ID)) {
-          uart_read_blocking(UART_ID, buf, len); 
-          printf("%c\n", buf);
-          
+    // RX interrupt handler
+    void on_uart_rx() {
+        while (uart_is_readable(UART_ID)) {
+            uint8_t ch = uart_getc(UART_ID);
+            // Can we send it back?
+            if (uart_is_writable(UART_ID)) {
+                // Change it slightly first!
+                ch++;
+                uart_putc(UART_ID, ch);
+            }
+            chars_rxed++;
         }
+<<<<<<< HEAD
         while(uart_is_readable(UART_ID)) {
         uint8_t ch = uart_getc(UART_ID);
         if (ch == 'C') {
@@ -81,9 +63,97 @@
         }
       }
     =}
+=======
+    }
 
-  }
+  =}
+  buttons = new Buttons();
+  timer t(0, 150ms)
+  state count: int = 0
+  reaction (startup) {=
+    printf("Setting up the UART with the BAUD Rate.\n");
+    // Set up our UART with the required speed.
+    uart_init(UART_ID, BAUD_RATE);
 
+    // Set the TX and RX pins by using the function select on the GPIO
+    // Set datasheet for more information on function select
+    printf("Setting up the UART GPIO Pins");
+    gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
+    gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
+  =}
+  reaction(t) -> buttons.trigger {=
+    lf_set(buttons.trigger, true);
+  =}
 
+  reaction (t) {=
+      printf("Sending data over the UART.\n");
+      // Use some the various UART functions to send out data
+      // In a default system, printf will also output via the default UART
 
+      // Send out a character without any conversions
+      uart_putc_raw(UART_ID, 'D');
+
+      // Send out a character but do CR/LF conversions
+      //uart_putc(UART_ID, 'B');
+
+      // Send out a string, with CR/LF conversions
+      //uart_puts(UART_ID, " Hello, UART!\n");
+
+      static char buf[32];
+      size_t len = 1;
+      static char buf1;
+
+      // Set UART flow control CTS/RTS, we don't want these, so turn them off
+      uart_set_hw_flow(UART_ID, false, false);
+
+      // Set our data format
+      uart_set_format(UART_ID, DATA_BITS, STOP_BITS, PARITY);
+
+      // Turn off FIFO's - we want to do this character by character
+      uart_set_fifo_enabled(UART_ID, false);
+
+      // Set up a RX interrupt
+      // We need to set up the handler first
+      // Select correct interrupt for the UART we are using
+      int UART_IRQ = UART_ID == uart0 ? UART0_IRQ : UART1_IRQ;
+
+      // And set up and enable the interrupt handlers
+      irq_set_exclusive_handler(UART_IRQ, on_uart_rx);
+      irq_set_enabled(UART_IRQ, true);
+
+      // Now enable the UART to send interrupts - RX only
+      uart_set_irq_enables(UART_ID, true, false);
+      
+    
+      //uart_putc(UART_ID, buf1);
+      // if (uart_is_readable(UART_ID)) {
+      //   printf("UART is readable.\n");
+      //   buf1 = uart_getc(UART_ID);
+      //   //uart_read_blocking(UART_ID, buf, len);
+      //   printf("%c\n", buf1);
+      //   self->count++;
+      //   printf("%d\n",self->count);
+      // }
+      while (1) {
+        printf("Inside infinite loop");
+        tight_loop_contents();
+      }
   
+  =}
+  reaction(t) -> buttons.trigger {=
+    lf_set(buttons.trigger, true);
+    
+  =}
+>>>>>>> 60fda87a86664222b553dbd0b7a54d0a9458b53d
+
+  reaction(buttons.button_a) {=
+   if(buttons.button_a->value) {
+    printf("Sending data over the UART.\n");
+    uart_putc_raw(UART_ID, 'L');
+   }
+    
+  =}
+}
+
+
+
