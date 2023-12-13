@@ -372,7 +372,7 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
       snprintf(buf0, 17, "POS: %f", self->vehicle_distance_location);
       snprintf(buf1, 17, "PID: %f", pid_value);
       snprintf(buf2, 17, "Cnt Loc: %i", self->vehicle_location_area_count);
-      snprintf(buf3, 17, "Loc %i", self->vehicle_location_area_count % 6);
+      snprintf(buf3, 17, "Loc %i", self->vehicle_location_area_count % 5);
 
       lf_set(motor.left_speed, left_side_motor_power);
       lf_set(motor.right_speed, right_side_motor_power);
@@ -466,9 +466,9 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
       while(uart_is_readable(UART_ID)) {
         uint8_t ch = uart_getc(UART_ID);
         if (ch == 'C') {
-          self->temp_driving_forward_timer = 10; //timer to make sure it doesnt stop again due to the gray line
-          lf_set(motor.left_power, 0.1f);
-          lf_set(motor.right_power, 0.1f);
+          self-> temp_driving_forward_timer = 10;
+          lf_set(motor.left_speed, 0.1f);
+          lf_set(motor.right_speed, 0.1f);
           lf_set_mode(DRIVE_MODE);
         }
       }
