@@ -230,6 +230,10 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
             lf_set(motor.left_power, 0);
             lf_set(motor.right_power, 0);
             uart_putc_raw(UART_ID, 'L');
+            lf_set(disp.line0, "ARRIVED STOP MODE");
+            lf_set(disp.line1, " ");
+            lf_set(disp.line2, " ");
+            lf_set(disp.line3, "CONTINUE = [C]");
             lf_set_mode(ARRIVED_STOP_MODE);
       }
 
@@ -398,28 +402,28 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
      =}
 
     //Checking buttons
-    // reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MOVE_FORWARD, motor.left_power, motor.right_power {=
-    //   if (buttons.button_c->value) {
-    //     lf_set(motor.left_power, 0.1f);
-    //     lf_set(motor.right_power, 0.1f);
-    //     lf_set_mode(MOVE_FORWARD);
-    //   } 
-    // =}
-    reaction(trigger_time) -> MOVE_FORWARD, disp.line0, disp.line1, disp.line2,disp.line3, motor.left_power, motor.right_power{=
-      if (uart_getc(UART_ID) == 'C') {
-        lf_set(disp.line0, "Moving Foward");
-        lf_set(disp.line1, "for 1 and half seconds");
-        lf_set(disp.line2, "then goes to");
-        lf_set(disp.line3, "Main Menu");
+    reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MOVE_FORWARD, motor.left_power, motor.right_power {=
+      if (buttons.button_c->value) {
         lf_set(motor.left_power, 0.1f);
         lf_set(motor.right_power, 0.1f);
         lf_set_mode(MOVE_FORWARD);
-      }
+      } 
     =}
+    // reaction(seconds) -> MOVE_FORWARD, disp.line0, disp.line1, disp.line2,disp.line3, motor.left_power, motor.right_power{=
+    //   if (uart_getc(UART_ID) == 'C') {
+    //     lf_set(disp.line0, "Moving Foward");
+    //     lf_set(disp.line1, "for 1 and half seconds");
+    //     lf_set(disp.line2, "then goes to");
+    //     lf_set(disp.line3, "Main Menu");
+    //     lf_set(motor.left_power, 0.1f);
+    //     lf_set(motor.right_power, 0.1f);
+    //     lf_set_mode(MOVE_FORWARD);
+    //   }
+    // =}
   }
 
   mode MOVE_FORWARD { 
-    timer wait(0, 2s);
+    timer wait(0, 1s);
     reaction(t) line.reflect -> motor.left_power, motor.right_power, disp.line0, disp.line1, disp.line2,disp.line3 {=
       //gyro.z = -90, angle_before_turn = -10, result = -80
       static char buf0[17];
