@@ -286,6 +286,15 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
           uart_putc_raw(UART_ID, 'Z');
           self->vehicle_location_area_count = self->vehicle_location_area_count + 1; //resets the vehicle distance location
           self->loc_area_count_debouncer_time = self->loc_area_count_debouncer_time + 1;
+          while(uart_is_readable(UART_ID)) {
+            uint8_t ch = uart_getc(UART_ID);
+            if (ch == 'Z') {
+              self->temp_driving_forward_timer = 10; //timer to make sure it doesnt stop again due to the gray line
+              lf_set(motor.left_power, 0.1f);
+              lf_set(motor.right_power, 0.1f);
+              lf_set_mode(DRIVE_MODE);
+            }
+          }
       }
 
       //Handles Localization so that the vehicles don't come near each other
@@ -383,7 +392,7 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
   }
 
   // mode DRIVE_STANDBY_MODE {
-  //   reaction(trigger_time) -> DRIVE_MODE, motor.left_power, motor.right_power {= 
+  //   reaction(trigger_time) -> DRIVE_MODE, motor.left_speed, motor.right_speed {= 
   //     //Handles Localization so that the vehicles don't come near each other
   //     //Pushes a car to standby mode if the vehicles come close to each other
   //     //Localization Logic to count this area the vehicle is in.
@@ -391,8 +400,8 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
   //     if ( ((self->vehicle_location_area_count % 6) - self->second_vehicle_location_area_count) > 1 && self->vehicle_car_id == 0) { 
   //       //Checks and makes sure that the two vehicles are never in the same area. 
   //       //If the two vehicles are in the same area, the second vehicle starts.
-  //       lf_set(motor.left_power, 0.075);
-  //       lf_set(motor.right_power, 0.075);
+  //       lf_set(motor.left_speed, 0.075);
+  //       lf_set(motor.right_speed, 0.075);
   //       lf_set_mode(DRIVE_MODE); 
   //     }
 
@@ -400,16 +409,16 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
   //     if ( ((self->vehicle_location_area_count % 6) - self->second_vehicle_location_area_count) > 1 && self->vehicle_car_id == 1) { 
   //       //Checks and makes sure that the two vehicles are never in the same area. 
   //       //If the two vehicles are in the same area, the second vehicle starts.
-  //       lf_set(motor.left_power, 0.075);
-  //       lf_set(motor.right_power, 0.075);
+  //       lf_set(motor.left_speed, 0.075);
+  //       lf_set(motor.right_speed, 0.075);
   //       lf_set_mode(DRIVE_MODE); 
   //     }
     
   //   =}
-  //   reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MAIN_MENU_MODE, motor.left_power, motor.right_power {=
+  //   reaction(buttons.button_a, buttons.button_b, buttons.button_c) -> MAIN_MENU_MODE, motor.left_speed, motor.right_speed {=
   //     if (buttons.button_c->value) {
-  //       lf_set(motor.left_power, 0);
-  //       lf_set(motor.right_power, 0);
+  //       lf_set(motor.left_speed, 0);
+  //       lf_set(motor.right_speed, 0);
   //       lf_set_mode(MAIN_MENU_MODE);
   //     } 
   //   =}
