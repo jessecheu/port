@@ -261,7 +261,7 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
             lf_set(disp.line2, buf2);
             lf_set(disp.line3, buf3);
             uart_putc_raw(UART_ID, 'L');
-            self->crane_countdown_count = 30; //Setting it so that it waits in the ARRIVED Mode 
+            self->crane_countdown_count = 25; //Setting it so that it waits in the ARRIVED Mode 
             lf_set_mode(ARRIVED_STOP_MODE);
       }
 
