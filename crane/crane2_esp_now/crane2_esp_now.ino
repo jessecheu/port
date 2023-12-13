@@ -14,11 +14,14 @@
 #include "BluetoothSerial.h"
 #include <esp_now.h>
 #include <WiFi.h>
+#include "Ultrasonic.h"
+
+Ultrasonic ultrasonic(17);
 
 uint8_t broadcastAddress1[] = {0x94, 0xE6, 0x86, 0x90, 0x85, 0x84}; // M1
 uint8_t broadcastAddress2[] = {0xB8, 0xD6, 0x1A, 0x0C, 0x95, 0x50}; // M2
 
-float duration, distance;
+long distance;
 typedef struct pololu {
   int num;
   int signal;
@@ -43,17 +46,19 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   memcpy(&myData, incomingData, sizeof(myData));
+  distance = ultrasonic.MeasureInCentimeters();
   Serial.print("Bytes received: ");
   Serial.println(len);
   Serial.print("Signal received: ");
   Serial.println(myData.signal);
 
-  if(myData.signal == 1 && distance < 10 && myData.zone%5 == 2) {
-    Serial.println("Timer triggered");
-    timer();
+  if(myData.signal == 1 && distance < 10 && myData.zone%5 == 0) {
+    Serial.println("Timer Triggered");
+    dropPayload();
+    // timer();
   }
   else {
-    Serial.println(distance);
+  Serial.println(distance);
     Serial.println(myData.zone);
   }
 }
@@ -102,8 +107,8 @@ void loop() {
   digitalWrite(trigPin, LOW);
 
   duration = pulseIn(echoPin, HIGH);
-  distance = (duration*.0343)/2;
-  //Serial.println(distance);
+  distance = ultrasonic.MeasureInCentimeters();
+  Serial.println(distance);
   // Serial.print("Distance: ");
   // Serial.println(distance);
   // delay(100);
@@ -138,7 +143,7 @@ void loop() {
 
 void dropPayload() {
   Serial.println("Lower M2");
-  digitalWrite(dirPin2,HIGH); //lower
+  digitalWrite(dirPin2,LOW); //lower
   // turn on EM
   digitalWrite(emPin, HIGH);
   Serial.println("EM on");
@@ -151,7 +156,7 @@ void dropPayload() {
   delay(2000); // 2 second delay
 
   Serial.println("Raise M2");
-  digitalWrite(dirPin2, LOW); // raise
+  digitalWrite(dirPin2, HIGH); // raise
   for (int x = 0; x<50; x++) {
     digitalWrite(stepPin2, LOW);
     delayMicroseconds(20000);
@@ -160,9 +165,9 @@ void dropPayload() {
   }
   delay(2000); // 2 second delay
 
-  Serial.println("Move M1 135");
-  digitalWrite(dirPin1,LOW);
-  for (int x = 0; x<55; x++) {
+  Serial.println("Move M1");
+  digitalWrite(dirPin1,HIGH);
+  for (int x = 0; x<100; x++) {
     digitalWrite(stepPin1,HIGH);
     delayMicroseconds(20000);
     digitalWrite(stepPin1, LOW);
@@ -172,7 +177,7 @@ void dropPayload() {
   delay(2000); // 2 second delay
   // lower M2
   Serial.println("Lower M2");
-  digitalWrite(dirPin2,HIGH); //lower
+  digitalWrite(dirPin2,LOW); //lower
   
   for (int x = 0; x<50; x++) {
     digitalWrite(stepPin2, LOW);
@@ -186,7 +191,7 @@ void dropPayload() {
   delay(2000);
 
     Serial.println("Raise M2");
-  digitalWrite(dirPin2, LOW); // raise
+  digitalWrite(dirPin2, HIGH); // raise
   for (int x = 0; x<50; x++) {
     digitalWrite(stepPin2, LOW);
     delayMicroseconds(20000);
@@ -196,9 +201,9 @@ void dropPayload() {
   delay(2000); // 2 second delay
 
 
-  Serial.println("Bring back M1 135");
-  digitalWrite(dirPin1, HIGH); // change direction
-  for (int x = 0; x<55; x++) {
+  Serial.println("Bring back M1");
+  digitalWrite(dirPin1, LOW); // change direction
+  for (int x = 0; x<100; x++) {
     digitalWrite(stepPin1,HIGH);
     delayMicroseconds(20000);
     digitalWrite(stepPin1, LOW);

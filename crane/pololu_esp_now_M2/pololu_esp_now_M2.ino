@@ -4,9 +4,11 @@
 #include "BluetoothSerial.h"
 #include <HardwareSerial.h>
 
-uint8_t broadcastAddress1[] = {0x94, 0xB9, 0x7E, 0x6B, 0xA6, 0x08}; //C1
-uint8_t broadcastAddress2[] = {0x94, 0xB9, 0x7E, 0x6B, 0xA7, 0x30}; //C2
-uint8_t broadcastAddress3[] = {0xB8, 0xD6, 0x1A, 0x0C, 0x95, 0x50}; // M2
+uint8_t broadcastAddress1[] = {0xFC, 0xF5, 0xC4, 0x07, 0xA8, 0xEC}; //C3 is crane 1
+uint8_t broadcastAddress2[] = {0x0C, 0x8B, 0x95, 0x96, 0x51, 0x38}; //C4 is crane 2
+// uint8_t broadcastAddress1[] = {0x94, 0xB9, 0x7E, 0x6B, 0xA6, 0x08}; //Original C1
+// uint8_t broadcastAddress2[] = {0x94, 0xB9, 0x7E, 0x6B, 0xA7, 0x30}; //Original C2
+uint8_t broadcastAddress3[] = {0x94, 0xE6, 0x86, 0x90, 0x85, 0x84}; // M1
 
 typedef struct test_struct {
   int num;
@@ -14,9 +16,7 @@ typedef struct test_struct {
   int zone;
 } test_struct;
 
-//int zone _counter = 1;
 test_struct myPololu;
-
 test_struct otherPololu;
 
 HardwareSerial UARTPort(1);
@@ -37,14 +37,13 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   memcpy(&otherPololu, incomingData, sizeof(otherPololu));
-  Serial.print("Signal received: ");
-  Serial.println(otherPololu.signal);
+  Serial.print("Bytes received: ");
+  Serial.println(len);
   if((myPololu.zone - otherPololu.zone) == -1) {
     UARTPort.write('S');
   }
-  if((otherPololu.signal == 9)) {
-    Serial.println("UART Move");
-    UARTPort.write("C");
+  else {
+    UARTPort.write('C');
   }
 }
 
@@ -52,7 +51,7 @@ void setup() {
   Serial.begin(115200);
   myPololu.signal = 0;
   myPololu.num = 1; //M1
-  myPololu.zone = 1;
+  myPololu.zone = 3;
   UARTPort.begin(115200, SERIAL_8N1, 16, 17);
   WiFi.mode(WIFI_STA);
 
@@ -86,14 +85,13 @@ void setup() {
 }
 void loop() {
   if(UARTPort.available()) {
-    uart_temp = UARTPort.read();
     if(uart_temp == 'L') {
       myPololu.signal = 1;
-      Serial.print("Arrival mode: ");
-      Serial.println("Awaiting Load/Unloading");
+      Serial.print("Received UART Signal: ");
+      Serial.println("L");
     }
     else if(uart_temp == 'Z') {
-      myPololu.zone = myPololu.zone += 1;
+      myPololu.zone += 1;
       myPololu.signal = 2;
       Serial.print("Entered new zone: ");
       Serial.println(myPololu.zone);
