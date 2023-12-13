@@ -363,7 +363,7 @@ main reactor(calibration_time: time = 10 s, sample_period: time = 25 ms) {
       snprintf(buf0, 17, "POS: %f", self->vehicle_distance_location);
       snprintf(buf1, 17, "PID: %f", pid_value);
       snprintf(buf2, 17, "Cnt Loc: %i", self->vehicle_location_area_count);
-      snprintf(buf3, 17, "Loc %i", self->vehicle_location_area_count % 6);
+      snprintf(buf3, 17, "Loc %i", self->vehicle_location_area_count % 5);
 
       lf_set(motor.left_speed, left_side_motor_power);
       lf_set(motor.right_speed, right_side_motor_power);
