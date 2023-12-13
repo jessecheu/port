@@ -71,7 +71,15 @@
           printf("%c\n", buf);
           
         }
-    
+        while(uart_is_readable(UART_ID)) {
+        uint8_t ch = uart_getc(UART_ID);
+        if (ch == 'C') {
+          self->temp_driving_forward_timer = 10; //timer to make sure it doesnt stop again due to the gray line
+          lf_set(motor.left_power, 0.1f);
+          lf_set(motor.right_power, 0.1f);
+          lf_set_mode(DRIVE_MODE);
+        }
+      }
     =}
 
   }
